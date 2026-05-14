@@ -105,7 +105,7 @@ function NavItem({ item, isPersonal, pendingCounts }) {
 }
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar() {
+function Sidebar({ isOpen }) {
   const [user, setUser] = useState({ name: '', role: '', initials: '' });
   const [pendingCounts, setPendingCounts] = useState({ approvals: 0, pending: 0 });
 
@@ -129,7 +129,7 @@ function Sidebar() {
   }, []);
 
   return (
-    <aside className="sidebar">
+    <aside className={'sidebar' + (isOpen ? ' open' : '')}>
       {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
@@ -225,7 +225,7 @@ function Sidebar() {
 }
 
 // ── Header ───────────────────────────────────────────────────────────────────
-function Header() {
+function Header({ onMenuToggle }) {
   const { theme, setTheme, setShowAddTx } = useApp();
   const location = useLocation();
   const page = location.pathname === '/' ? 'dashboard' : location.pathname.substring(1);
@@ -247,6 +247,14 @@ function Header() {
   return (
     <header className="topbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Hamburger — only visible on mobile via CSS */}
+        <button className="menu-toggle" onClick={onMenuToggle} title="Menu" aria-label="Mở menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div className="topbar-title">{PAGE_TITLES[page] || page}</div>
@@ -291,11 +299,24 @@ function Header() {
 
 // ── Layout ───────────────────────────────────────────────────────────────────
 function Layout({ children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Auto-close sidebar on route change (mobile UX)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   return (
     <div className="app-shell">
-      <Sidebar />
+      {/* Mobile backdrop */}
+      <div
+        className={'sidebar-backdrop' + (sidebarOpen ? ' show' : '')}
+        onClick={() => setSidebarOpen(false)}
+      />
+      <Sidebar isOpen={sidebarOpen} />
       <div className="main-area">
-        <Header />
+        <Header onMenuToggle={() => setSidebarOpen(o => !o)} />
         <main className="page-content fade-in">
           {children}
         </main>

@@ -67,7 +67,7 @@ function Recurring() {
       loadData();
     } catch (error) {
       console.error('Failed to save recurring:', error);
-      Toast.error('Không thể lưu giao dịch định kỳ: ' + ' ' + error.message);
+      Toast.error('Không thể lưu giao dịch định kỳ: ' + error.message);
     }
   }
 
@@ -79,7 +79,7 @@ function Recurring() {
       loadData();
     } catch (error) {
       console.error('Failed to delete recurring:', error);
-      Toast.error('Không thể xóa giao dịch định kỳ: ' + ' ' + error.message);
+      Toast.error('Không thể xóa giao dịch định kỳ: ' + error.message);
     }
   }
 
@@ -89,7 +89,7 @@ function Recurring() {
       loadData();
     } catch (error) {
       console.error('Failed to toggle recurring:', error);
-      Toast.error('Không thể cập nhật trạng thái: ' + ' ' + error.message);
+      Toast.error('Không thể cập nhật trạng thái: ' + error.message);
     }
   }
 

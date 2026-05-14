@@ -70,7 +70,7 @@ function Budgets() {
       loadData();
     } catch (error) {
       console.error('Failed to save budget:', error);
-      Toast.error('Không thể lưu ngân sách: ' + ' ' + error.message);
+      Toast.error('Không thể lưu ngân sách: ' + error.message);
     }
   }
 
@@ -82,7 +82,7 @@ function Budgets() {
       loadData();
     } catch (error) {
       console.error('Failed to delete budget:', error);
-      Toast.error('Không thể xóa ngân sách: ' + ' ' + error.message);
+      Toast.error('Không thể xóa ngân sách: ' + error.message);
     }
   }
 

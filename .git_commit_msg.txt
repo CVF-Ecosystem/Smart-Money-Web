@@ -1,7 +1,11 @@
-chore(refactor): Finalize EA Remediation Round 2 & cleanup debt
+fix(p0+p1): Fix bugs & code hygiene — AllowanceHero, error messages, console.log, mobile sidebar
 
-- Eradicated 6 hardcoded "T5" labels across Personal and Approvals components, implementing dynamic month rendering.
-- Fully integrated `sm-personal-settings.jsx` with Supabase persistence endpoints (`updatePersonalSalary`, `updatePersonalBudgets`, `add/update/deletePersonalCategory`), eliminating MOCK_DATA.
-- Deleted `src/sm-pages.jsx` (~1400 lines) after ensuring all legacy module code was successfully migrated to `src/pages/`.
-- Established Vitest component testing infrastructure and wrote `ConfirmDialog` interaction tests, successfully verifying behavior and cleanup.
-- Application maturity advanced to Production-Ready Early Beta.
+P0 Bugs:
+- Fix AllowanceHero hardcoded remaining days (was always 20, now dynamic from current date/month)
+- Fix 5 truncated Toast.error('Không thể ') in sm-transactions.jsx, sm-dashboard.jsx, Members.jsx
+
+P1 Code Hygiene:
+- Remove redundant ' ' + ' ' + pattern in Toast messages across Categories.jsx, Budgets.jsx, Recurring.jsx, Members.jsx
+- Remove 7 console.log statements from production code (sm-supabase.js, supabase-config.js, sm-import-export.js)
+- Wire mobile sidebar hamburger toggle in sm-layout.jsx (Sidebar.isOpen, Layout state, backdrop, auto-close on route change)
+- Add build_output.txt and .git_commit_msg.txt to .gitignore

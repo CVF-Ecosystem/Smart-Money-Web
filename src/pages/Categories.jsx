@@ -59,7 +59,7 @@ function Categories() {
       loadCategories();
     } catch (error) {
       console.error('Failed to save category:', error);
-      Toast.error('Không thể lưu danh mục: ' + ' ' + error.message);
+      Toast.error('Không thể lưu danh mục: ' + error.message);
     }
   }
 
@@ -71,7 +71,7 @@ function Categories() {
       loadCategories();
     } catch (error) {
       console.error('Failed to delete category:', error);
-      Toast.error('Không thể xóa danh mục: ' + ' ' + error.message);
+      Toast.error('Không thể xóa danh mục: ' + error.message);
     }
   }
 

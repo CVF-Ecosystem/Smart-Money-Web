@@ -41,7 +41,7 @@ function Members() {
       setMembers(enriched);
     } catch (error) {
       console.error('Failed to load members:', error);
-      Toast.error('Không thể ');
+      Toast.error('Không thể tải danh sách thành viên: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ function Members() {
       loadMembers();
     } catch (error) {
       console.error('Failed to save member:', error);
-      Toast.error('Không thể lưu thành viên: ' + ' ' + error.message);
+      Toast.error('Không thể lưu thành viên: ' + error.message);
     }
   }
 
@@ -86,7 +86,7 @@ function Members() {
       loadMembers();
     } catch (error) {
       console.error('Failed to delete member:', error);
-      Toast.error('Không thể xóa thành viên: ' + ' ' + error.message);
+      Toast.error('Không thể xóa thành viên: ' + error.message);
     }
   }
 

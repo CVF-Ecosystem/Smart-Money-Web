@@ -41,7 +41,7 @@ const ImportExportService = {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          console.log('📊 Parsed Excel data:', jsonData);
+
           
           // Get categories and members for mapping
           const categories = await DataAdapter.getCategories();

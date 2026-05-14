@@ -429,7 +429,9 @@ function AllowanceHero({ txList, cats, salary }) {
   const fixedIds = new Set(cats.filter(c=>c.group==='fixed').map(c=>c.id));
   const fixedSpent = txList.filter(t=>t.date.startsWith(mp)&&fixedIds.has(t.categoryId)).reduce((s,t)=>s+t.amount,0);
   const available = salary - fixedSpent;
-  const remaining = 31 - 12 + 1;
+  const today = new Date();
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const remaining = Math.max(1, daysInMonth - today.getDate() + 1);
   const dailyAllow = Math.max(0, available / remaining);
   const spentToday = txList.filter(t=>t.date===new Date().toISOString().split('T')[0]).reduce((s,t)=>s+t.amount,0);
   const totalMonth = txList.filter(t=>t.date.startsWith(mp)).reduce((s,t)=>s+t.amount,0);

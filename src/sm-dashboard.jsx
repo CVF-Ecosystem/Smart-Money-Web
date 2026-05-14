@@ -249,7 +249,7 @@ function Dashboard() {
       
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      Toast.error('Không thể ');
+      Toast.error('Không thể tải dữ liệu dashboard: ' + error.message);
     } finally {
       setLoading(false);
     }

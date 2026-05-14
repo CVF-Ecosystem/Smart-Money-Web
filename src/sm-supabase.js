@@ -24,7 +24,7 @@ function initSupabase(supabaseUrl, supabaseAnonKey) {
   }
   
   supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-  console.log('✅ Supabase client initialized');
+
   return true;
 }
 
@@ -602,7 +602,7 @@ async function getMemberPaymentStatus() {
  * Call this once when organization is first created
  */
 async function seedFromMockData(mockData) {
-  console.log('🌱 Seeding data from MOCK_DATA...');
+
   
   try {
     // 1. Create categories
@@ -664,7 +664,7 @@ async function seedFromMockData(mockData) {
       });
     }
     
-    console.log('✅ Seed data completed');
+
     return true;
   } catch (error) {
     console.error('❌ Seed data failed:', error);
@@ -896,4 +896,4 @@ export const SupabaseService = {
   getCurrentOrgId: () => currentOrgId,
 };
 
-console.log('📦 Supabase Service loaded');
+
