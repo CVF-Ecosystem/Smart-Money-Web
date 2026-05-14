@@ -208,8 +208,15 @@ function Sidebar() {
             <div className="user-name">{user.name}</div>
             <div className="user-role">{user.role}</div>
           </div>
-          <div style={{ color: 'var(--sidebar-text)', cursor: 'pointer' }} title="Đăng xuất">
-            {IC.logout(15)}
+          <div style={{ color: 'var(--sidebar-text)', cursor: 'pointer' }} title="Đăng xuất" onClick={async () => {
+            if (window.DataAdapter) {
+              await window.DataAdapter.signOut();
+              window.location.reload();
+            } else {
+              import('./sm-data-adapter.js').then(m => m.DataAdapter.signOut().then(() => window.location.reload()));
+            }
+          }}>
+            {window.IC ? window.IC.logout(15) : null}
           </div>
         </div>
       </div>

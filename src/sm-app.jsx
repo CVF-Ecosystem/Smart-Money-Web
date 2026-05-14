@@ -1,12 +1,35 @@
-
-
-import React, {  useState  } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+
+// Layout & Context
+import { AppProvider, Layout } from './sm-layout.jsx';
+import { DataAdapter } from './sm-data-adapter.js';
+import { Toast } from './sm-toast.jsx';
+import { useTweaks, TweaksPanel, TweakSection, TweakColor, TweakToggle, TweakSlider } from './tweaks-panel.jsx';
+
+// Fund pages
+import { Dashboard } from './sm-dashboard.jsx';
+import { Transactions } from './sm-transactions.jsx';
+import { Approvals, AuditLog } from './sm-approval.jsx';
+
+// Pages (split from God File)
+import Members from './pages/Members.jsx';
+import Reports from './pages/Reports.jsx';
+import Categories from './pages/Categories.jsx';
+import Budgets from './pages/Budgets.jsx';
+import Recurring from './pages/Recurring.jsx';
+import Funds from './pages/Funds.jsx';
+import ImportExport from './pages/ImportExport.jsx';
+import Settings from './pages/Settings.jsx';
+
+// Personal Finance pages
+import { MyWallet, DailySpend, SavingsGoals } from './sm-personal.jsx';
+import { PersonalSettings } from './sm-personal-settings.jsx';
 
 // ── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
   const [email,    setEmail]    = useState('thuquy@company.vn');
-  const [password, setPassword] = useState('••••••••');
+  const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
 
   async function handleLogin(e) {
@@ -79,7 +102,7 @@ function LoginScreen({ onLogin }) {
           </form>
 
           <div style={{ marginTop: 20, padding: '12px', background: 'var(--primary-light)', borderRadius: 8, fontSize: 12, color: 'var(--text-3)' }}>
-            <strong style={{ color: 'var(--primary)' }}>Demo:</strong> Nhấn "Đăng nhập" để vào xem prototype
+            <strong style={{ color: 'var(--primary)' }}>Demo:</strong> Nhập đúng email/password Supabase để đăng nhập
           </div>
         </div>
 
@@ -101,7 +124,7 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
@@ -154,7 +177,7 @@ function App() {
         const session = await DataAdapter.getSession();
         if (session) setLoggedIn(true);
       } catch (e) {
-        console.error("Session check failed", e);
+        console.error('Session check failed', e);
       } finally {
         setCheckingSession(false);
       }
@@ -162,13 +185,13 @@ function App() {
     checkSession();
   }, []);
 
-  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-    "primaryColor": "#2563EB",
-    "accentColor": "#7C3AED",
-    "personalColor": "#0D9488",
-    "compactMode": false,
-    "fontScale": 1
-  }/*EDITMODE-END*/;
+  const TWEAK_DEFAULTS = {
+    primaryColor: '#2563EB',
+    accentColor: '#7C3AED',
+    personalColor: '#0D9488',
+    compactMode: false,
+    fontScale: 1,
+  };
 
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
@@ -180,22 +203,15 @@ function App() {
     document.documentElement.style.setProperty('--personal-raw',  t.personalColor);
   }, [t && t.primaryColor, t && t.personalColor]);
 
-  // Process recurring transactions on login
   React.useEffect(() => {
-    if (loggedIn) {
-      processRecurringOnLogin();
-    }
+    if (loggedIn) processRecurringOnLogin();
   }, [loggedIn]);
 
   async function processRecurringOnLogin() {
     try {
       const created = await DataAdapter.processRecurringTransactions();
       if (created && created.length > 0) {
-        console.log(`✅ Auto-created ${created.length} recurring transactions`);
-        // Show toast notification
-        setTimeout(() => {
-          Toast.success(`🔄 Đã tự động tạo ${created.length} giao dịch định kỳ`);
-        }, 1000);
+        setTimeout(() => Toast.success(`🔄 Đã tự động tạo ${created.length} giao dịch định kỳ`), 1000);
       }
     } catch (error) {
       console.error('Failed to process recurring transactions:', error);
@@ -205,7 +221,9 @@ function App() {
   if (checkingSession) {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)' }}>
-        Đang tải hệ thống...
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 14 }}>Đang tải hệ thống...</div>
+        </div>
       </div>
     );
   }
@@ -236,17 +254,5 @@ function App() {
     </AppProvider>
   );
 }
-
-// Spin animation
-const _spinStyle = document.createElement('style');
-_spinStyle.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-document.head.appendChild(_spinStyle);
-
-
-root.render(
-  <ToastProvider>
-    <App />
-  </ToastProvider>
-);
 
 export default App;

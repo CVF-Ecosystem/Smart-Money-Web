@@ -271,3 +271,103 @@ textarea.input { min-height:76px; resize:vertical; }
 /* ── Login ─────────────────────────────────────────────────────────────── */
 .login-screen { min-height:100vh; background:linear-gradient(160deg,#0D1B2A 0%,#1E3A5F 60%,#1E2A4A 100%); display:flex; align-items:center; justify-content:center; padding:24px; }
 .login-card   { background:var(--surface); border-radius:18px; padding:36px; width:100%; box-shadow:0 25px 70px rgba(0,0,0,.5); }
+
+/* ── Mobile Responsive ─────────────────────────────────────────────────── */
+/* Tablet / Small Laptop */
+@media (max-width: 1024px) {
+  :root { --sidebar-w: 210px; }
+  .page-content { padding: 16px 18px; }
+}
+
+/* Mobile — sidebar becomes overlay + hamburger */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 260px; }
+
+  /* App shell stacks vertically on mobile */
+  .app-shell { flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* Sidebar hidden by default, slides in as overlay */
+  .sidebar {
+    position: fixed; top: 0; left: -100%; width: var(--sidebar-w);
+    height: 100vh; z-index: 200;
+    transition: left .25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 8px 0 32px rgba(0,0,0,.4);
+  }
+  .sidebar.open { left: 0; }
+
+  /* Overlay backdrop for sidebar */
+  .sidebar-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.5); z-index: 199; backdrop-filter: blur(2px);
+  }
+  .sidebar-backdrop.show { display: block; }
+
+  /* Hamburger toggle button */
+  .menu-toggle {
+    display: flex !important; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; color: var(--text-3);
+  }
+
+  /* Main area takes full width */
+  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Topbar adjustments */
+  .topbar { padding: 0 14px; gap: 10px; }
+  .topbar-title { font-size: 15px; }
+  .topbar-sub { display: none; }
+  .topbar-right { gap: 6px; }
+
+  /* Page content */
+  .page-content { padding: 14px; }
+
+  /* Stat cards: 2 columns on mobile, 1 if very small */
+  .stat-card { padding: 14px; }
+  .stat-value { font-size: 18px; }
+
+  /* Tables: horizontal scroll on mobile */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 600px; }
+  th, td { padding: 9px 12px; font-size: 12px; }
+
+  /* Modals: full screen on mobile */
+  .modal-bg { padding: 0; align-items: flex-end; }
+  .modal-box {
+    max-width: 100%; width: 100%;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    max-height: 92vh;
+    animation: modalInMobile .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes modalInMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  /* Filter row wraps */
+  .filter-row { flex-wrap: wrap; gap: 8px; }
+  .filter-row .input { min-width: 0; }
+
+  /* Login screen */
+  .login-card { padding: 24px 20px; }
+
+  /* Chip groups wrap */
+  .chip-group { gap: 5px; }
+  .chip { padding: 4px 10px; font-size: 11px; }
+
+  /* Section title */
+  .section-title { font-size: 13.5px; }
+
+  /* Buttons on mobile */
+  .btn { padding: 8px 12px; font-size: 12.5px; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .topbar-title { font-size: 13px; }
+  .page-content { padding: 10px; }
+  .stat-value { font-size: 16px; }
+  th, td { padding: 7px 8px; font-size: 11px; }
+}
+
+/* Hide hamburger on desktop */
+.menu-toggle { display: none; }
+ 

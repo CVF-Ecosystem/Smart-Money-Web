@@ -193,8 +193,8 @@ function Approvals() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
         {[
           { label: 'Chờ phê duyệt', value: pending.length,    sub: formatVND(totalPending),  color: 'var(--warning)',  bg: 'var(--warning-light)',  icon: 'clock' },
-          { label: 'Đã duyệt T5',   value: approved.length,   sub: formatVND(totalApproved), color: 'var(--income)',   bg: 'var(--income-light)',   icon: 'checkCircle' },
-          { label: 'Từ chối T5',    value: rejected.length,   sub: 'Không giải ngân',        color: 'var(--expense)',  bg: 'var(--expense-light)',  icon: 'x' },
+          { label: `Đã duyệt T${new Date().getMonth()+1}`,   value: approved.length,   sub: formatVND(totalApproved), color: 'var(--income)',   bg: 'var(--income-light)',   icon: 'checkCircle' },
+          { label: `Từ chối T${new Date().getMonth()+1}`,    value: rejected.length,   sub: 'Không giải ngân',        color: 'var(--expense)',  bg: 'var(--expense-light)',  icon: 'x' },
         ].map((s, i) => (
           <div key={i} className="stat-card" style={{ padding: '16px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

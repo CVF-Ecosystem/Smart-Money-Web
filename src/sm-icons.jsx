@@ -55,4 +55,3 @@ IC.tag        = (s=16) => <svg {..._s(s)}><path d="M20.59 13.41l-7.17 7.17a2 2 0
 IC.zap        = (s=16) => <svg {..._s(s)}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
 IC.eye        = (s=16) => <svg {..._s(s)}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
-export {  IC  };

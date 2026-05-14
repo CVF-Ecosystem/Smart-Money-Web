@@ -1,6 +1,7 @@
 
-
-import React, {  useState  } from 'react';
+import React, { useState, useEffect } from 'react';
+import { DataAdapter } from './sm-data-adapter.js';
+import { Toast } from './sm-toast.jsx';
 
 // ── Personal Category Modal ───────────────────────────────────────────────────
 function PCatModal({ cat, defaultGroup, groups, onClose, onSave }) {
@@ -64,9 +65,6 @@ function PCatModal({ cat, defaultGroup, groups, onClose, onSave }) {
 }
 
 // ── Personal Settings Page ────────────────────────────────────────────────────
-// NOTE: Personal finance tables not yet in Supabase schema.
-// Using MOCK_DATA as initial seed; React state is the source of truth in-session.
-// TODO: Migrate to DataAdapter when personal_wallets / personal_budgets tables are created.
 function PersonalSettings() {
   const [data, setData] = useState(null);
 
@@ -102,37 +100,53 @@ function PersonalSettings() {
   const budgetAllocated = Object.values(budgets).reduce((s, v) => s + (Number(v) || 0), 0);
   const overBudget = budgetAllocated > totalBudget;
 
-  function saveSalary() {
-    // State-only save — no Supabase table yet for personal salary info
-    // TODO: replace with DataAdapter.updateSalaryInfo({ monthlySalary: salary, salaryDay })
-    setSalarySaved(true);
-    setTimeout(() => setSalarySaved(false), 2000);
-  }
-
-  function saveBudgets() {
-    // State-only save — no Supabase table yet for personal budgets
-    // TODO: replace with DataAdapter.updatePersonalBudgets({ monthly: totalBudget, categories: budgets })
-    setBudgetSaved(true);
-    setTimeout(() => setBudgetSaved(false), 2000);
-  }
-
-  function handleCatSave(form) {
-    // State-only update — no Supabase table yet for personal categories
-    // TODO: replace with DataAdapter.updatePersonalCategory / addPersonalCategory
-    if (catModal && catModal.id) {
-      setCats(cs => cs.map(c => c.id === catModal.id ? {...c, ...form} : c));
-    } else {
-      const newCat = { id: 'pc_' + Date.now(), ...form };
-      setCats(cs => [...cs, newCat]);
+  async function saveSalary() {
+    try {
+      await DataAdapter.updatePersonalSalary({ monthlySalary: salary, salaryDay });
+      setSalarySaved(true);
+      setTimeout(() => setSalarySaved(false), 2000);
+    } catch (err) {
+      console.error(err);
+      Toast.error('Không thể lưu thu nhập: ' + err.message);
     }
-    setCatModal(null);
   }
 
-  function handleCatDelete(id) {
-    // State-only delete — no Supabase table yet for personal categories
-    // TODO: replace with DataAdapter.deletePersonalCategory(id)
-    setCats(cs => cs.filter(c => c.id !== id));
-    setDeletingId(null);
+  async function saveBudgets() {
+    try {
+      await DataAdapter.updatePersonalBudgets({ monthly: totalBudget, categories: budgets });
+      setBudgetSaved(true);
+      setTimeout(() => setBudgetSaved(false), 2000);
+    } catch (err) {
+      console.error(err);
+      Toast.error('Không thể lưu ngân sách: ' + err.message);
+    }
+  }
+
+  async function handleCatSave(form) {
+    try {
+      if (catModal && catModal.id) {
+        await DataAdapter.updatePersonalCategory(catModal.id, form);
+        setCats(cs => cs.map(c => c.id === catModal.id ? {...c, ...form} : c));
+      } else {
+        const newCat = await DataAdapter.addPersonalCategory(form);
+        setCats(cs => [...cs, newCat]);
+      }
+      setCatModal(null);
+    } catch (err) {
+      console.error(err);
+      Toast.error('Không thể lưu danh mục: ' + err.message);
+    }
+  }
+
+  async function handleCatDelete(id) {
+    try {
+      await DataAdapter.deletePersonalCategory(id);
+      setCats(cs => cs.filter(c => c.id !== id));
+      setDeletingId(null);
+    } catch (err) {
+      console.error(err);
+      Toast.error('Không thể xóa danh mục: ' + err.message);
+    }
   }
 
   return (

@@ -762,6 +762,50 @@ async function deletePersonalTransaction(id) {
   if (error) throw error;
 }
 
+async function updatePersonalSalary({ monthlySalary, salaryDay }) {
+  const uid = currentUser.id;
+  const { data, error } = await supabase
+    .from('personal_salary')
+    .upsert({ profile_id: uid, monthly_salary: monthlySalary, salary_day: salaryDay, updated_at: new Date().toISOString() })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function updatePersonalBudgets({ monthly, categories }) {
+  const uid = currentUser.id;
+  const { data, error } = await supabase
+    .from('personal_budgets')
+    .upsert({
+      profile_id:      uid,
+      monthly_total:   monthly,
+      fixed_limit:     categories?.fixed     || 0,
+      daily_limit:     categories?.daily     || 0,
+      lifestyle_limit: categories?.lifestyle || 0,
+      others_limit:    categories?.others    || 0,
+    })
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function addPersonalCategory(cat) {
+  const { data, error } = await supabase.from('personal_categories').insert([{ ...cat, profile_id: currentUser.id }]).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function updatePersonalCategory(id, updates) {
+  const { data, error } = await supabase.from('personal_categories').update(updates).eq('id', id).eq('profile_id', currentUser.id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function deletePersonalCategory(id) {
+  const { error } = await supabase.from('personal_categories').delete().eq('id', id).eq('profile_id', currentUser.id);
+  if (error) throw error;
+}
+
 // ── Export API ───────────────────────────────────────────────────────────────
 
 export const SupabaseService = {
@@ -838,6 +882,11 @@ export const SupabaseService = {
   addPersonalTransaction,
   updatePersonalTransaction,
   deletePersonalTransaction,
+  updatePersonalSalary,
+  updatePersonalBudgets,
+  addPersonalCategory,
+  updatePersonalCategory,
+  deletePersonalCategory,
   
   // Seed
   seedFromMockData,

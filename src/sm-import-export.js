@@ -1,6 +1,7 @@
-
 import * as XLSX from 'xlsx';
-'use strict';
+import { ConfirmDialog } from './sm-confirm.jsx';
+import { DataAdapter } from './sm-data-adapter.js';
+import { MOCK_DATA } from './sm-data.js';
 
 /* ============================================================================
  *  Import/Export Logic — Phase 2
@@ -17,8 +18,8 @@ const ImportExportService = {
    * @returns {Promise<{success: number, errors: string[]}>}
    */
   async importFromExcel(file) {
-    if (!window.XLSX) {
-      throw new Error('SheetJS library not loaded. Add: <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>');
+    if (!XLSX) {
+      throw new Error('SheetJS library not available');
     }
     
     return new Promise((resolve, reject) => {
@@ -152,8 +153,8 @@ const ImportExportService = {
    * @param {string} filename - Output filename
    */
   async exportToExcel(transactions = null, filename = 'transactions.xlsx') {
-    if (!window.XLSX) {
-      throw new Error('SheetJS library not loaded');
+    if (!XLSX) {
+      throw new Error('SheetJS library not available');
     }
     
     // Get all transactions if not provided
@@ -322,7 +323,7 @@ const ImportExportService = {
           }
           
           // Confirm before restore
-          const confirmed = confirm(
+          const confirmed = await ConfirmDialog.show('Khôi phục dữ liệu',
             `Khôi phục dữ liệu từ backup?\n\n` +
             `Ngày backup: ${new Date(backup.timestamp).toLocaleString('vi-VN')}\n` +
             `Giao dịch: ${backup.data.transactions?.length || 0}\n` +
@@ -447,7 +448,9 @@ const ImportExportService = {
   
 };
 
-// Export to window
-window.ImportExportService = ImportExportService;
-
-console.log('📦 Import/Export Service loaded');
+// Named exports for page components
+export const importTransactionsFromExcel = (file) => ImportExportService.importFromExcel(file);
+export const exportToExcel = (transactions, filename) => ImportExportService.exportToExcel(transactions, filename);
+export const backupData = (filename) => ImportExportService.backupToJSON(filename);
+export const restoreData = (file) => ImportExportService.restoreFromJSON(file);
+export { ImportExportService };

@@ -96,11 +96,28 @@ function SpendDonut({ transactions, categories }) {
 }
 
 // ── Personal Finance Widget ───────────────────────────────────────────────────
-// NOTE: Personal finance tables (personal_wallets, personal_transactions, personal_budgets)
-// are not yet in Supabase schema — using MOCK_DATA intentionally until schema is extended.
-// TODO: Migrate when personal_wallets + personal_transactions tables are created.
 function PersonalWidget({ setPage }) {
-  const { personalTransactions, personalCategories, personalCategoryGroups, personalBudgets, personalWallets, salaryInfo } = MOCK_DATA;
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    if (window.DataAdapter) {
+      window.DataAdapter.getPersonalData().then(setData).catch(console.error);
+    } else {
+      // Import hack if DataAdapter is not global
+      import('./sm-data-adapter.js').then(m => m.DataAdapter.getPersonalData().then(setData)).catch(console.error);
+    }
+  }, []);
+
+  if (!data) {
+    return (
+      <div className="card" style={{ padding: '20px 24px', borderLeft: '4px solid #0D9488', minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Đang tải dữ liệu cá nhân...</div>
+      </div>
+    );
+  }
+
+  const { transactions: personalTransactions, categories: personalCategories, categoryGroups: personalCategoryGroups, budgets: personalBudgets, wallets: personalWallets, salaryInfo } = data;
+  const user = window.DataAdapter ? window.DataAdapter.getCurrentUser() || {} : {};
   const mp = new Date().toISOString().slice(0, 7);
   const fixedIds   = new Set(personalCategories.filter(c=>c.group==='fixed').map(c=>c.id));
   const fixedSpent = personalTransactions.filter(t=>t.date.startsWith(mp)&&fixedIds.has(t.categoryId)).reduce((s,t)=>s+t.amount,0);
@@ -122,10 +139,10 @@ function PersonalWidget({ setPage }) {
     <div className="card" style={{ padding:'20px 24px', borderLeft:'4px solid #0D9488' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ width:34,height:34,borderRadius:9,background:'rgba(13,148,136,0.12)',display:'flex',alignItems:'center',justifyContent:'center',color:'#0D9488' }}>{IC.creditCard(17)}</div>
+          <div style={{ width:34,height:34,borderRadius:9,background:'rgba(13,148,136,0.12)',display:'flex',alignItems:'center',justifyContent:'center',color:'#0D9488' }}>{window.IC ? window.IC.creditCard(17) : null}</div>
           <div>
             <div style={{ fontFamily:'Space Grotesk',fontWeight:700,fontSize:14 }}>Tài chính cá nhân · T{new Date().getMonth() + 1}/{new Date().getFullYear()}</div>
-            <div style={{ fontSize:11.5,color:'var(--text-4)' }}>{(MOCK_DATA.user||{}).name || 'Thuủ quỹ'}</div>
+            <div style={{ fontSize:11.5,color:'var(--text-4)' }}>{user.name || 'Thủ quỹ'}</div>
           </div>
         </div>
         <button className="btn btn-ghost btn-xs" style={{ borderColor:'#0D9488',color:'#0D9488' }} onClick={()=>setPage('my-wallet')}>Xem chi tiết →</button>
@@ -310,7 +327,7 @@ function Dashboard() {
         {[
           { label: 'Thu tháng này', value: mIncome, color: 'var(--income)', bg: 'var(--income-light)', icon: 'arrowUp' },
           { label: 'Chi tháng này', value: mExpense, color: 'var(--expense)', bg: 'var(--expense-light)', icon: 'arrowDown' },
-          { label: 'Chênh lệch T5', value: mIncome - mExpense, color: mIncome >= mExpense ? 'var(--income)' : 'var(--expense)', bg: mIncome >= mExpense ? 'var(--income-light)' : 'var(--expense-light)', icon: mIncome >= mExpense ? 'trendUp' : 'trendDown' },
+          { label: `Chênh lệch T${new Date().getMonth() + 1}`, value: mIncome - mExpense, color: mIncome >= mExpense ? 'var(--income)' : 'var(--expense)', bg: mIncome >= mExpense ? 'var(--income-light)' : 'var(--expense-light)', icon: mIncome >= mExpense ? 'trendUp' : 'trendDown' },
         ].map((s, i) => (
           <div key={i} className="stat-card" style={{ padding: '18px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

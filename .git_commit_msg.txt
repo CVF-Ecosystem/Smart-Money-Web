@@ -1,0 +1,7 @@
+chore(refactor): Finalize EA Remediation Round 2 & cleanup debt
+
+- Eradicated 6 hardcoded "T5" labels across Personal and Approvals components, implementing dynamic month rendering.
+- Fully integrated `sm-personal-settings.jsx` with Supabase persistence endpoints (`updatePersonalSalary`, `updatePersonalBudgets`, `add/update/deletePersonalCategory`), eliminating MOCK_DATA.
+- Deleted `src/sm-pages.jsx` (~1400 lines) after ensuring all legacy module code was successfully migrated to `src/pages/`.
+- Established Vitest component testing infrastructure and wrote `ConfirmDialog` interaction tests, successfully verifying behavior and cleanup.
+- Application maturity advanced to Production-Ready Early Beta.

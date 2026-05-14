@@ -1,6 +1,6 @@
 
-
 import React, {  useState, useMemo  } from 'react';
+import { ConfirmDialog } from './sm-confirm.jsx';
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 function getSpendByGroup(txList, cats, monthPrefix) {
@@ -217,7 +217,11 @@ function TransferModal({ onClose, personalWallets }) {
   const [walletId, setWalletId] = useState('pw2');
   const [note, setNote] = useState(`Đóng quỹ T${new Date().getMonth() + 1}/${new Date().getFullYear()}`);
   const [done, setDone] = useState(false);
-  function confirm() { setDone(true); setTimeout(onClose, 1800); }
+  async function confirm() { 
+    if (await ConfirmDialog.show('Xác nhận', 'Bạn có chắc chắn muốn chuyển tiền?')) {
+      setDone(true); setTimeout(onClose, 1800); 
+    }
+  }
   return (
     <div className="modal-bg" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 440 }} onClick={e => e.stopPropagation()}>
@@ -439,7 +443,7 @@ function AllowanceHero({ txList, cats, salary }) {
           <div style={{ fontSize:12,opacity:0.75,fontWeight:500,marginBottom:6 }}>Ngân sách mỗi ngày · T{new Date().getMonth() + 1}/{new Date().getFullYear()}</div>
           <div style={{ fontFamily:'Space Grotesk',fontSize:36,fontWeight:800,letterSpacing:'-1px',lineHeight:1 }}>{formatVND(dailyAllow)}</div>
           <div style={{ marginTop:14,display:'flex',gap:18,flexWrap:'wrap' }}>
-            {[['Lương tháng',formatVND(salary)],['Chi cố định',formatVND(fixedSpent)],['Còn lại',formatVND(available)],['Chi T5',formatVND(totalMonth)]].map(([l,v],i,arr)=>(
+            {[['Lương tháng',formatVND(salary)],['Chi cố định',formatVND(fixedSpent)],['Còn lại',formatVND(available)],[`Chi T${new Date().getMonth()+1}`,formatVND(totalMonth)]].map(([l,v],i,arr)=>(
               <div key={l} style={{ display:'flex' }}>
                 <div>
                   <div style={{ fontSize:10.5,opacity:.6,marginBottom:2 }}>{l}</div>
@@ -454,7 +458,7 @@ function AllowanceHero({ txList, cats, salary }) {
           <div style={{ fontSize:11,opacity:.65,marginBottom:4 }}>Hôm nay đã chi</div>
           <div style={{ fontFamily:'Space Grotesk',fontSize:22,fontWeight:700,color:overToday?'#FCA5A5':'white' }}>{formatVND(spentToday)}</div>
           {overToday && <div style={{ fontSize:11,color:'#FCA5A5',marginTop:4 }}>⚠ Vượt hạn mức!</div>}
-          <div style={{ fontSize:11,opacity:.55,marginTop:8 }}>{remaining} ngày còn lại T5</div>
+          <div style={{ fontSize:11,opacity:.55,marginTop:8 }}>{remaining} ngày còn lại T{new Date().getMonth()+1}</div>
         </div>
       </div>
     </div>
@@ -508,11 +512,11 @@ function MyWallet() {
       {/* Charts + Budget — side by side */}
       <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:16 }}>
         <div className="card" style={{ padding:'18px 20px' }}>
-          <div className="section-title">Chi tiêu theo nhóm · T5</div>
+          <div className="section-title">Chi tiêu theo nhóm · T{new Date().getMonth()+1}/{new Date().getFullYear()}</div>
           <PersonalSpendDonut txList={personalTransactions} cats={personalCategories} groups={personalCategoryGroups} monthPrefix={mp} />
         </div>
         <div className="card" style={{ padding:'18px 20px' }}>
-          <div className="section-title">Ngân sách theo nhóm · T5</div>
+          <div className="section-title">Ngân sách theo nhóm · T{new Date().getMonth()+1}/{new Date().getFullYear()}</div>
           <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
             {personalCategoryGroups.map(grp => {
               const spent = spendByGroup[grp.key]||0;

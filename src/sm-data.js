@@ -225,8 +225,4 @@ function getWalletById(id) { return MOCK_DATA.personalWallets.find(w => w.id ===
 function getMonthIncome(p)  { return MOCK_DATA.transactions.filter(t => t.type === 'income'  && t.date.startsWith(p)).reduce((s, t) => s + t.amount, 0); }
 function getMonthExpense(p) { return MOCK_DATA.transactions.filter(t => t.type === 'expense' && t.date.startsWith(p)).reduce((s, t) => s + t.amount, 0); }
 
-export { 
-  MOCK_DATA, formatVND, formatVNDFull, formatDate, formatTS,
-  getCatById, getMemberById, getPCatById, getWalletById,
-  getMonthIncome, getMonthExpense,
- };
+export { formatVNDFull, formatDate, formatTS, getCatById, getMemberById, getPCatById, getWalletById, getMonthIncome, getMonthExpense };

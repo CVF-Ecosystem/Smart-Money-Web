@@ -1,5 +1,5 @@
-
-'use strict';
+import { MOCK_DATA } from './sm-data.js';
+import { SupabaseService } from './sm-supabase.js';
 
 /* ============================================================================
  *  Data Adapter — Unified API cho cả Supabase và MOCK_DATA
@@ -10,7 +10,7 @@ const DataAdapter = {
   // ── Mode Detection ─────────────────────────────────────────────────────────
   
   isSupabaseMode() {
-    return window.SUPABASE_CONFIG?.enabled && window.SupabaseService?.isSupabaseReady();
+    return SupabaseService && SupabaseService.isSupabaseReady && SupabaseService.isSupabaseReady();
   },
   
   // ── Auth ───────────────────────────────────────────────────────────────────
@@ -496,6 +496,50 @@ const DataAdapter = {
     if (idx >= 0) MOCK_DATA.personalTransactions.splice(idx, 1);
   },
 
+  async updatePersonalSalary({ monthlySalary, salaryDay }) {
+    if (this.isSupabaseMode() && SupabaseService.updatePersonalSalary) {
+      return await SupabaseService.updatePersonalSalary({ monthlySalary, salaryDay });
+    }
+    // Mock mode: update in-memory
+    MOCK_DATA.salaryInfo = { ...MOCK_DATA.salaryInfo, monthlySalary, salaryDay };
+    return MOCK_DATA.salaryInfo;
+  },
+
+  async updatePersonalBudgets({ monthly, categories }) {
+    if (this.isSupabaseMode() && SupabaseService.updatePersonalBudgets) {
+      return await SupabaseService.updatePersonalBudgets({ monthly, categories });
+    }
+    // Mock mode: update in-memory
+    MOCK_DATA.personalBudgets = { ...MOCK_DATA.personalBudgets, monthly, categories };
+    return MOCK_DATA.personalBudgets;
+  },
+
+  async addPersonalCategory(cat) {
+    if (this.isSupabaseMode() && SupabaseService.addPersonalCategory) {
+      return await SupabaseService.addPersonalCategory(cat);
+    }
+    const newCat = { id: 'pc_' + Date.now(), ...cat };
+    MOCK_DATA.personalCategories.push(newCat);
+    return newCat;
+  },
+
+  async updatePersonalCategory(id, updates) {
+    if (this.isSupabaseMode() && SupabaseService.updatePersonalCategory) {
+      return await SupabaseService.updatePersonalCategory(id, updates);
+    }
+    const cat = MOCK_DATA.personalCategories.find(c => c.id === id);
+    if (cat) Object.assign(cat, updates);
+    return cat;
+  },
+
+  async deletePersonalCategory(id) {
+    if (this.isSupabaseMode() && SupabaseService.deletePersonalCategory) {
+      return await SupabaseService.deletePersonalCategory(id);
+    }
+    const idx = MOCK_DATA.personalCategories.findIndex(c => c.id === id);
+    if (idx >= 0) MOCK_DATA.personalCategories.splice(idx, 1);
+  },
+
   // ── Helpers ────────────────────────────────────────────────────────────────
   
   _recalculateStats() {
@@ -529,7 +573,4 @@ const DataAdapter = {
   },
 };
 
-// Export to window
-window.DataAdapter = DataAdapter;
-
-console.log('🔌 Data Adapter loaded — Mode:', DataAdapter.isSupabaseMode() ? 'Supabase' : 'Mock');
+export { DataAdapter };
