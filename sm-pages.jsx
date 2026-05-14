@@ -36,7 +36,7 @@ function Members() {
       setMembers(enriched);
     } catch (error) {
       console.error('Failed to load members:', error);
-      alert('Không thể tải danh sách thành viên');
+      Toast.error('Không thể ');
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ function Members() {
 
   async function handleSave() {
     if (!form.code || !form.name) {
-      alert('Vui lòng điền đầy đủ thông tin');
+      Toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -69,7 +69,7 @@ function Members() {
       loadMembers();
     } catch (error) {
       console.error('Failed to save member:', error);
-      alert('Không thể lưu thành viên: ' + error.message);
+      Toast.error('Không thể lưu thành viên: ' + ' ' + error.message);
     }
   }
 
@@ -81,7 +81,7 @@ function Members() {
       loadMembers();
     } catch (error) {
       console.error('Failed to delete member:', error);
-      alert('Không thể xóa thành viên: ' + error.message);
+      Toast.error('Không thể xóa thành viên: ' + ' ' + error.message);
     }
   }
 
@@ -574,7 +574,7 @@ function Categories() {
 
   async function handleSave() {
     if (!form.code || !form.name) {
-      alert('Vui lòng điền đầy đủ thông tin');
+      Toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -601,7 +601,7 @@ function Categories() {
       loadCategories();
     } catch (error) {
       console.error('Failed to save category:', error);
-      alert('Không thể lưu danh mục: ' + error.message);
+      Toast.error('Không thể lưu danh mục: ' + ' ' + error.message);
     }
   }
 
@@ -613,7 +613,7 @@ function Categories() {
       loadCategories();
     } catch (error) {
       console.error('Failed to delete category:', error);
-      alert('Không thể xóa danh mục: ' + error.message);
+      Toast.error('Không thể xóa danh mục: ' + ' ' + error.message);
     }
   }
 
@@ -766,7 +766,7 @@ function Budgets() {
 
   async function handleSave() {
     if (!form.categoryId || !form.amount) {
-      alert('Vui lòng điền đầy đủ thông tin');
+      Toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -789,7 +789,7 @@ function Budgets() {
       loadData();
     } catch (error) {
       console.error('Failed to save budget:', error);
-      alert('Không thể lưu ngân sách: ' + error.message);
+      Toast.error('Không thể lưu ngân sách: ' + ' ' + error.message);
     }
   }
 
@@ -801,7 +801,7 @@ function Budgets() {
       loadData();
     } catch (error) {
       console.error('Failed to delete budget:', error);
-      alert('Không thể xóa ngân sách: ' + error.message);
+      Toast.error('Không thể xóa ngân sách: ' + ' ' + error.message);
     }
   }
 
@@ -942,7 +942,7 @@ function Recurring() {
 
   async function handleSave() {
     if (!form.name || !form.categoryId || !form.amount) {
-      alert('Vui lòng điền đầy đủ thông tin');
+      Toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -969,7 +969,7 @@ function Recurring() {
       loadData();
     } catch (error) {
       console.error('Failed to save recurring:', error);
-      alert('Không thể lưu giao dịch định kỳ: ' + error.message);
+      Toast.error('Không thể lưu giao dịch định kỳ: ' + ' ' + error.message);
     }
   }
 
@@ -981,7 +981,7 @@ function Recurring() {
       loadData();
     } catch (error) {
       console.error('Failed to delete recurring:', error);
-      alert('Không thể xóa giao dịch định kỳ: ' + error.message);
+      Toast.error('Không thể xóa giao dịch định kỳ: ' + ' ' + error.message);
     }
   }
 
@@ -991,7 +991,7 @@ function Recurring() {
       loadData();
     } catch (error) {
       console.error('Failed to toggle recurring:', error);
-      alert('Không thể cập nhật trạng thái: ' + error.message);
+      Toast.error('Không thể cập nhật trạng thái: ' + ' ' + error.message);
     }
   }
 
@@ -1224,11 +1224,11 @@ function ImportExport() {
     try {
       setImporting(true);
       const result = await ImportExportService.importFromExcel(file);
-      alert(`✅ Import thành công!\n\nĐã import: ${result.success} giao dịch\nLỗi: ${result.errors.length}\n\n${result.errors.length > 0 ? 'Chi tiết lỗi:\n' + result.errors.slice(0, 3).join('\n') : ''}`);
+      Toast.success(`Import thành công!\n\nĐã import: ${result.success} giao dịch\nLỗi: ${result.errors.length}\n\n${result.errors.length > 0 ? 'Chi tiết lỗi:\n' + result.errors.slice(0, 3).join('\n') : ''}`);
       window.location.reload(); // Reload to show new data
     } catch (error) {
       console.error('Import failed:', error);
-      alert('❌ Import thất bại: ' + error.message);
+      Toast.error('Import thất bại: ' + ' ' + error.message);
     } finally {
       setImporting(false);
       e.target.value = ''; // Reset input
@@ -1239,10 +1239,10 @@ function ImportExport() {
     try {
       setExporting(true);
       await ImportExportService.exportToExcel();
-      alert('✅ Export thành công! File đã được tải xuống.');
+      Toast.success('');
     } catch (error) {
       console.error('Export failed:', error);
-      alert('❌ Export thất bại: ' + error.message);
+      Toast.error('Export thất bại: ' + ' ' + error.message);
     } finally {
       setExporting(false);
     }
@@ -1252,10 +1252,10 @@ function ImportExport() {
     try {
       setBacking(true);
       await ImportExportService.backupToJSON();
-      alert('✅ Backup thành công! File JSON đã được tải xuống.');
+      Toast.success('');
     } catch (error) {
       console.error('Backup failed:', error);
-      alert('❌ Backup thất bại: ' + error.message);
+      Toast.error('Backup thất bại: ' + ' ' + error.message);
     } finally {
       setBacking(false);
     }
@@ -1268,12 +1268,12 @@ function ImportExport() {
     try {
       const result = await ImportExportService.restoreFromJSON(file);
       if (result.success) {
-        alert('✅ Restore thành công!');
+        Toast.success('');
         window.location.reload();
       }
     } catch (error) {
       console.error('Restore failed:', error);
-      alert('❌ Restore thất bại: ' + error.message);
+      Toast.error('Restore thất bại: ' + ' ' + error.message);
     } finally {
       e.target.value = '';
     }

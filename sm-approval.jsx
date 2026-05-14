@@ -135,13 +135,11 @@ function Approvals() {
   async function loadApprovals() {
     try {
       setLoading(true);
-      // NOTE: approval_requests table not yet in Supabase schema.
-      // When table is added, replace this with: DataAdapter.getApprovalRequests()
-      // For now, use MOCK_DATA so the page renders meaningfully
-      setRequests([...MOCK_DATA.approvalRequests]);
+      const data = await DataAdapter.getApprovalRequests();
+      setRequests(data);
     } catch (error) {
       console.error('Failed to load approvals:', error);
-      setRequests([]); // empty on error — do NOT silently use stale MOCK_DATA
+      setRequests([]); 
     } finally {
       setLoading(false);
     }
@@ -154,14 +152,17 @@ function Approvals() {
   const totalPending  = pending.reduce((s, r)  => s + r.amount, 0);
   const totalApproved = approved.reduce((s, r) => s + r.amount, 0);
 
-  function handleAction(id, mode, note) {
-    const approverName = (MOCK_DATA.user || {}).name || 'Admin';
-    setRequests(rs => rs.map(r => {
-      if (r.id !== id) return r;
-      return mode === 'approve'
-        ? { ...r, status: 'approved', note, approvedDate: new Date().toISOString().split('T')[0], approver: approverName }
-        : { ...r, status: 'rejected', note };
-    }));
+  async function handleAction(id, mode, note) {
+    try {
+      if (mode === 'approve') {
+        await DataAdapter.approveRequest(id, note);
+      } else {
+        await DataAdapter.rejectRequest(id, note);
+      }
+      loadApprovals();
+    } catch (err) {
+      Toast.error('Action failed: ' + err.message);
+    }
     setModal(null);
     if (mode === 'approve') setTab('approved'); else setTab('rejected');
   }

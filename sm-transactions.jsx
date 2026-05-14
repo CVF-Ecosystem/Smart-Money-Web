@@ -224,7 +224,7 @@ function Transactions() {
       setMembers(memData);
     } catch (error) {
       console.error('Failed to load data:', error);
-      alert('Không thể tải dữ liệu. Vui lòng thử lại.');
+      Toast.error('Không thể ');
     } finally {
       setLoading(false);
     }
@@ -266,7 +266,7 @@ function Transactions() {
       setShowAddTx(false);
     } catch (error) {
       console.error('Failed to save transaction:', error);
-      alert('Không thể lưu giao dịch. Vui lòng thử lại.');
+      Toast.error('Không thể ');
     }
   }
 
@@ -277,7 +277,7 @@ function Transactions() {
       setDeleting(null);
     } catch (error) {
       console.error('Failed to delete transaction:', error);
-      alert('Không thể xóa giao dịch. Vui lòng thử lại.');
+      Toast.error('Không thể ');
     }
   }
 

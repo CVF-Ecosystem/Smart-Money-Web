@@ -406,6 +406,95 @@ const DataAdapter = {
     }));
   },
   
+  // ── Approvals & Layout ─────────────────────────────────────────────────────
+  
+  async getPendingCounts() {
+    if (this.isSupabaseMode() && SupabaseService.getPendingCounts) {
+      return await SupabaseService.getPendingCounts();
+    }
+    return {
+      approvals: MOCK_DATA.approvalRequests ? MOCK_DATA.approvalRequests.filter(r => r.status === 'pending').length : 0
+    };
+  },
+  
+  async getApprovalRequests() {
+    if (this.isSupabaseMode() && SupabaseService.getApprovalRequests) {
+      return await SupabaseService.getApprovalRequests();
+    }
+    return MOCK_DATA.approvalRequests || [];
+  },
+
+  async approveRequest(id, note = '') {
+    if (this.isSupabaseMode() && SupabaseService.approveRequest) {
+      return await SupabaseService.approveRequest(id, note);
+    }
+    const req = MOCK_DATA.approvalRequests.find(r => r.id === id);
+    if (req) {
+      req.status = 'approved';
+      req.note = note;
+      req.approvedDate = new Date().toISOString().split('T')[0];
+      req.approver = MOCK_DATA.user?.name || 'Thủ quỹ';
+    }
+    return req;
+  },
+
+  async rejectRequest(id, note = '') {
+    if (this.isSupabaseMode() && SupabaseService.rejectRequest) {
+      return await SupabaseService.rejectRequest(id, note);
+    }
+    const req = MOCK_DATA.approvalRequests.find(r => r.id === id);
+    if (req) {
+      req.status = 'rejected';
+      req.note = note;
+      req.approver = MOCK_DATA.user?.name || 'Thủ quỹ';
+    }
+    return req;
+  },
+
+  // ── Personal Finance ───────────────────────────────────────────────────────
+  
+  async getPersonalData() {
+    if (this.isSupabaseMode() && SupabaseService.getPersonalData) {
+      return await SupabaseService.getPersonalData();
+    }
+    return {
+      wallets: MOCK_DATA.personalWallets || [],
+      categories: MOCK_DATA.personalCategories || [],
+      categoryGroups: MOCK_DATA.personalCategoryGroups || [],
+      transactions: MOCK_DATA.personalTransactions || [],
+      budgets: MOCK_DATA.personalBudgets || {},
+      salaryInfo: MOCK_DATA.salaryInfo || {},
+      pendingItems: MOCK_DATA.pendingItems || [],
+      savingsGoals: MOCK_DATA.savingsGoals || []
+    };
+  },
+
+  async addPersonalTransaction(tx) {
+    if (this.isSupabaseMode() && SupabaseService.addPersonalTransaction) {
+      return await SupabaseService.addPersonalTransaction(tx);
+    }
+    const newTx = { id: 'pt_' + Date.now(), ...tx };
+    MOCK_DATA.personalTransactions.unshift(newTx);
+    return newTx;
+  },
+
+  async updatePersonalTransaction(id, updates) {
+    if (this.isSupabaseMode() && SupabaseService.updatePersonalTransaction) {
+      return await SupabaseService.updatePersonalTransaction(id, updates);
+    }
+    const tx = MOCK_DATA.personalTransactions.find(t => t.id === id);
+    if (tx) Object.assign(tx, updates);
+    return tx;
+  },
+
+  async deletePersonalTransaction(id) {
+    if (this.isSupabaseMode() && SupabaseService.deletePersonalTransaction) {
+      return await SupabaseService.deletePersonalTransaction(id);
+    }
+    const idx = MOCK_DATA.personalTransactions.findIndex(t => t.id === id);
+    if (idx >= 0) MOCK_DATA.personalTransactions.splice(idx, 1);
+  },
+
   // ── Helpers ────────────────────────────────────────────────────────────────
   
   _recalculateStats() {

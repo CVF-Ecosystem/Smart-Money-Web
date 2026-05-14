@@ -670,6 +670,96 @@ async function seedFromMockData(mockData) {
   }
 }
 
+// ── Approvals & Layout ───────────────────────────────────────────────────────
+
+async function getPendingCounts() {
+  const { count, error } = await supabase
+    .from('approval_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', currentOrgId)
+    .eq('status', 'pending');
+  if (error) throw error;
+  return { approvals: count || 0 };
+}
+
+async function getApprovalRequests() {
+  const { data, error } = await supabase
+    .from('approval_requests')
+    .select('*, members(name)')
+    .eq('organization_id', currentOrgId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+async function approveRequest(id, note = '') {
+  const { data, error } = await supabase
+    .from('approval_requests')
+    .update({ status: 'approved', note, approved_date: new Date().toISOString().split('T')[0], approver_id: currentUser.id })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function rejectRequest(id, note = '') {
+  const { data, error } = await supabase
+    .from('approval_requests')
+    .update({ status: 'rejected', note, approver_id: currentUser.id })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// ── Personal Finance ─────────────────────────────────────────────────────────
+
+async function getPersonalData() {
+  const uid = currentUser.id;
+  const [wallets, categories, transactions, budgets, salaryInfo] = await Promise.all([
+    supabase.from('personal_wallets').select('*').eq('profile_id', uid),
+    supabase.from('personal_categories').select('*').eq('profile_id', uid),
+    supabase.from('personal_transactions').select('*').eq('profile_id', uid).order('date', { ascending: false }),
+    supabase.from('personal_budgets').select('*').eq('profile_id', uid).maybeSingle(),
+    supabase.from('personal_salary').select('*').eq('profile_id', uid).maybeSingle()
+  ]);
+  
+  return {
+    wallets: wallets.data || [],
+    categories: categories.data || [],
+    categoryGroups: [
+      { key: 'fixed',     name: 'Thiết yếu', color: '#7C3AED', desc: 'Cố định hàng tháng' },
+      { key: 'daily',     name: 'Linh tinh',  color: '#D97706', desc: 'Sinh hoạt hàng ngày' },
+      { key: 'lifestyle', name: 'Giải trí',   color: '#0891B2', desc: 'Vui chơi & Tiêu dùng' },
+      { key: 'others',    name: 'Phát sinh',  color: '#DC2626', desc: 'Chi phí ngoài dự tính' },
+    ],
+    transactions: transactions.data || [],
+    budgets: budgets.data || { monthly: 12000000, categories: { fixed: 5000000, daily: 3000000, lifestyle: 2500000, others: 1500000 } },
+    salaryInfo: salaryInfo.data || { monthlySalary: 15000000, salaryDay: 5 },
+    pendingItems: [],
+    savingsGoals: []
+  };
+}
+
+async function addPersonalTransaction(tx) {
+  const { data, error } = await supabase.from('personal_transactions').insert([{ ...tx, profile_id: currentUser.id }]).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function updatePersonalTransaction(id, updates) {
+  const { data, error } = await supabase.from('personal_transactions').update(updates).eq('id', id).eq('profile_id', currentUser.id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function deletePersonalTransaction(id) {
+  const { error } = await supabase.from('personal_transactions').delete().eq('id', id).eq('profile_id', currentUser.id);
+  if (error) throw error;
+}
+
 // ── Export API ───────────────────────────────────────────────────────────────
 
 window.SupabaseService = {
@@ -734,6 +824,18 @@ window.SupabaseService = {
   // Reports
   getMonthlySummary,
   getMemberPaymentStatus,
+  
+  // Approvals
+  getPendingCounts,
+  getApprovalRequests,
+  approveRequest,
+  rejectRequest,
+  
+  // Personal
+  getPersonalData,
+  addPersonalTransaction,
+  updatePersonalTransaction,
+  deletePersonalTransaction,
   
   // Seed
   seedFromMockData,

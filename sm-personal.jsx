@@ -127,8 +127,7 @@ function WalletEditModal({ wallet, onClose, onSave }) {
   );
 }
 
-function PersonalTxModal({ editing, onClose, onSave }) {
-  const { personalCategories, personalCategoryGroups, personalWallets } = MOCK_DATA;
+function PersonalTxModal({ editing, onClose, onSave, personalCategories, personalCategoryGroups, personalWallets }) {
   const [form, setForm] = useState(editing ? { ...editing, amount: editing.amount } : { date: new Date().toISOString().split('T')[0], amount: '', categoryId: '', walletId: 'pw1', note: '' });
   const [ocrState, setOcrState] = useState('idle'); // idle | scanning | done
   function set(k, v) { setForm(f => ({...f, [k]: v})); }
@@ -212,7 +211,7 @@ function PersonalTxModal({ editing, onClose, onSave }) {
   );
 }
 
-function TransferModal({ onClose }) {
+function TransferModal({ onClose, personalWallets }) {
   const [amount, setAmount] = useState(150000);
   const [walletId, setWalletId] = useState('pw2');
   const [note, setNote] = useState(`Đóng quỹ T${new Date().getMonth() + 1}/${new Date().getFullYear()}`);
@@ -240,11 +239,11 @@ function TransferModal({ onClose }) {
               </div>
               <div className="input-group"><label className="input-label">Từ ví</label>
                 <select className="input" value={walletId} onChange={e=>setWalletId(e.target.value)}>
-                  {MOCK_DATA.personalWallets.map(w => <option key={w.id} value={w.id}>{w.name} — {formatVND(w.balance)}</option>)}
+                  {personalWallets.map(w => <option key={w.id} value={w.id}>{w.name} — {formatVND(w.balance)}</option>)}
                 </select>
               </div>
               <div className="input-group"><label className="input-label">Vào quỹ</label>
-                <select className="input"><option>Quỹ chính — {formatVND(MOCK_DATA.stats.balance)}</option></select>
+                <select className="input"><option>Quỹ chính</option></select>
               </div>
               <div className="input-group"><label className="input-label">Số tiền (VND) *</label>
                 <input type="number" className="input" style={{ fontFamily:'Space Grotesk' }} value={amount} onChange={e=>setAmount(Number(e.target.value))} />
@@ -264,7 +263,7 @@ function TransferModal({ onClose }) {
   );
 }
 
-function CategorizeModal({ item, onClose, onSave }) {
+function CategorizeModal({ item, onClose, onSave, personalCategories, personalCategoryGroups, personalWallets }) {
   const [catId, setCatId] = useState('');
   const [walletId, setWalletId] = useState('pw1');
   return (
@@ -285,16 +284,16 @@ function CategorizeModal({ item, onClose, onSave }) {
           <div className="input-group"><label className="input-label">Danh mục *</label>
             <select className="input" value={catId} onChange={e=>setCatId(e.target.value)}>
               <option value="">-- Chọn danh mục --</option>
-              {MOCK_DATA.personalCategoryGroups.map(grp => (
+              {personalCategoryGroups.map(grp => (
                 <optgroup key={grp.key} label={`── ${grp.name} ──`}>
-                  {MOCK_DATA.personalCategories.filter(c=>c.group===grp.key).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {personalCategories.filter(c=>c.group===grp.key).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </optgroup>
               ))}
             </select>
           </div>
           <div className="input-group"><label className="input-label">Ví thanh toán</label>
             <select className="input" value={walletId} onChange={e=>setWalletId(e.target.value)}>
-              {MOCK_DATA.personalWallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+              {personalWallets.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
           </div>
         </div>
@@ -463,11 +462,22 @@ function AllowanceHero({ txList, cats, salary }) {
 
 /* ── MY WALLET PAGE ──────────────────────────────────────────────────────────── */
 function MyWallet() {
-  const { personalWallets, personalTransactions, personalCategories, personalCategoryGroups, personalBudgets, salaryInfo } = MOCK_DATA;
-  const [wallets, setWallets]   = useState([...personalWallets]);
+  const [data, setData] = useState(null);
+  const [wallets, setWallets]   = useState([]);
   const [showTransfer, setShowTransfer] = useState(false);
   const [editingWallet, setEditingWallet] = useState(null);
   const mp = new Date().toISOString().slice(0, 7);
+
+  useEffect(() => {
+    DataAdapter.getPersonalData().then(d => {
+      setData(d);
+      setWallets([...d.wallets]);
+    });
+  }, []);
+
+  if (!data) return <div style={{padding:20}}>Đang tải...</div>;
+  const { categories: personalCategories, categoryGroups: personalCategoryGroups, transactions: personalTransactions, budgets: personalBudgets, salaryInfo } = data;
+  
   const totalBalance   = wallets.reduce((s,w) => s + w.balance, 0);
   const spendByGroup   = getSpendByGroup(personalTransactions, personalCategories, mp);
 
@@ -564,7 +574,7 @@ function MyWallet() {
         </div>
       </div>
 
-      {showTransfer && <TransferModal onClose={()=>setShowTransfer(false)} />}
+      {showTransfer && <TransferModal onClose={()=>setShowTransfer(false)} personalWallets={wallets} />}
       {editingWallet && <WalletEditModal wallet={editingWallet} onClose={()=>setEditingWallet(null)} onSave={saveWallet} />}
     </div>
   );
@@ -572,10 +582,10 @@ function MyWallet() {
 
 /* ── DAILY SPEND PAGE ─────────────────────────────────────────────────────────── */
 function DailySpend() {
-  const { personalCategories, personalCategoryGroups, personalWallets, personalBudgets } = MOCK_DATA;
   const { showAddTx, setShowAddTx } = useApp();
-  const [txList,  setTxList]  = useState([...MOCK_DATA.personalTransactions]);
-  const [pending, setPending] = useState([...MOCK_DATA.pendingItems]);
+  const [data, setData] = useState(null);
+  const [txList,  setTxList]  = useState([]);
+  const [pending, setPending] = useState([]);
   const [qAmt, setQAmt]       = useState('');
   const [qName, setQName]     = useState('');
   const [search, setSearch]   = useState('');
@@ -585,6 +595,17 @@ function DailySpend() {
   const [addingNew, setAddingNew] = useState(false);
   const [deletingTx, setDeletingTx] = useState(null);
   const mp = new Date().toISOString().slice(0, 7);
+
+  useEffect(() => {
+    DataAdapter.getPersonalData().then(d => {
+      setData(d);
+      setTxList([...d.transactions]);
+      setPending([...d.pendingItems]);
+    });
+  }, []);
+
+  if (!data) return <div style={{padding:20}}>Đang tải...</div>;
+  const { categories: personalCategories, categoryGroups: personalCategoryGroups, wallets: personalWallets, budgets: personalBudgets } = data;
 
   // Open add modal from header button
   React.useEffect(() => { if (showAddTx) { setAddingNew(true); setShowAddTx(false); } }, [showAddTx]);
@@ -749,8 +770,8 @@ function DailySpend() {
         )}
       </div>
 
-      {catModal && <CategorizeModal item={catModal} onClose={()=>setCatModal(null)} onSave={categorizePending} />}
-      {(addingNew||editingTx) && <PersonalTxModal editing={editingTx} onClose={()=>{setEditingTx(null);setAddingNew(false);}} onSave={saveTx} />}
+      {catModal && <CategorizeModal item={catModal} onClose={()=>setCatModal(null)} onSave={categorizePending} personalCategories={personalCategories} personalCategoryGroups={personalCategoryGroups} personalWallets={personalWallets} />}
+      {(addingNew||editingTx) && <PersonalTxModal editing={editingTx} onClose={()=>{setEditingTx(null);setAddingNew(false);}} onSave={saveTx} personalCategories={personalCategories} personalCategoryGroups={personalCategoryGroups} personalWallets={personalWallets} />}
       {deletingTx && (
         <div className="modal-bg" onClick={()=>setDeletingTx(null)}>
           <div className="modal-box" style={{ maxWidth:340 }} onClick={e=>e.stopPropagation()}>
@@ -769,11 +790,21 @@ function DailySpend() {
 
 /* ── SAVINGS GOALS PAGE ──────────────────────────────────────────────────────── */
 function SavingsGoals() {
-  const [goals, setGoals]   = useState([...MOCK_DATA.savingsGoals]);
+  const [data, setData] = useState(null);
+  const [goals, setGoals]   = useState([]);
   const [contrib, setContrib] = useState(null);
   const [editGoal, setEditGoal] = useState(null);
   const [showNew, setShowNew]   = useState(false);
   const [newGoal, setNewGoal]   = useState({ name:'', target:'', deadline:'', emoji:'🎯', color:'#7C3AED' });
+
+  useEffect(() => {
+    DataAdapter.getPersonalData().then(d => {
+      setData(d);
+      setGoals([...d.savingsGoals]);
+    });
+  }, []);
+
+  if (!data) return <div style={{padding:20}}>Đang tải...</div>;
 
   const totalSaved  = goals.reduce((s,g)=>s+g.saved,0);
   const totalTarget = goals.reduce((s,g)=>s+g.target,0);

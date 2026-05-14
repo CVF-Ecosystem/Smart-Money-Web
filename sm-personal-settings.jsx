@@ -67,22 +67,36 @@ function PCatModal({ cat, defaultGroup, groups, onClose, onSave }) {
 // Using MOCK_DATA as initial seed; React state is the source of truth in-session.
 // TODO: Migrate to DataAdapter when personal_wallets / personal_budgets tables are created.
 function PersonalSettings() {
-  const groups = MOCK_DATA.personalCategoryGroups;
+  const [data, setData] = useState(null);
 
   // Salary
-  const [salary,    setSalary]    = useState(MOCK_DATA.salaryInfo.monthlySalary);
-  const [salaryDay, setSalaryDay] = useState(MOCK_DATA.salaryInfo.salaryDay);
+  const [salary,    setSalary]    = useState(0);
+  const [salaryDay, setSalaryDay] = useState(1);
   const [salarySaved, setSalarySaved] = useState(false);
 
   // Budgets
-  const [totalBudget, setTotalBudget] = useState(MOCK_DATA.personalBudgets.monthly);
-  const [budgets,     setBudgets]     = useState({...MOCK_DATA.personalBudgets.categories});
+  const [totalBudget, setTotalBudget] = useState(0);
+  const [budgets,     setBudgets]     = useState({});
   const [budgetSaved, setBudgetSaved] = useState(false);
 
   // Categories
-  const [cats,       setCats]       = useState([...MOCK_DATA.personalCategories]);
-  const [catModal,   setCatModal]   = useState(null); // null | { mode:'new', group } | catObj
+  const [cats,       setCats]       = useState([]);
+  const [catModal,   setCatModal]   = useState(null); 
   const [deletingId, setDeletingId] = useState(null);
+
+  useEffect(() => {
+    DataAdapter.getPersonalData().then(d => {
+      setData(d);
+      setSalary(d.salaryInfo?.monthlySalary || 0);
+      setSalaryDay(d.salaryInfo?.salaryDay || 1);
+      setTotalBudget(d.budgets?.monthly || 0);
+      setBudgets({...d.budgets?.categories});
+      setCats([...d.categories]);
+    });
+  }, []);
+
+  if (!data) return <div style={{padding:20}}>Đang tải...</div>;
+  const groups = data.categoryGroups;
 
   const budgetAllocated = Object.values(budgets).reduce((s, v) => s + (Number(v) || 0), 0);
   const overBudget = budgetAllocated > totalBudget;

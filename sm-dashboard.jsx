@@ -231,7 +231,7 @@ function Dashboard() {
       
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      alert('Không thể tải dữ liệu dashboard');
+      Toast.error('Không thể ');
     } finally {
       setLoading(false);
     }

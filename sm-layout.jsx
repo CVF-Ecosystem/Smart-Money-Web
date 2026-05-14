@@ -102,12 +102,27 @@ function NavItem({ item, active, isPersonal, pendingCounts }) {
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar() {
   const { page } = useApp();
-  const user = MOCK_DATA.user;
-  // Badge counts: approval_requests table not in schema yet — use MOCK_DATA as local state
-  const pendingCounts = {
-    approvals: (MOCK_DATA.approvalRequests || []).filter(r => r.status === 'pending').length,
-    pending:   (MOCK_DATA.pendingItems || []).length,
-  };
+  const [user, setUser] = useState({ name: '', role: '', initials: '' });
+  const [pendingCounts, setPendingCounts] = useState({ approvals: 0, pending: 0 });
+
+  useEffect(() => {
+    async function load() {
+      const currentUser = await DataAdapter.getCurrentUser();
+      if (currentUser) {
+        setUser({
+          name: currentUser.name || currentUser.email || 'User',
+          role: currentUser.role || 'Thủ quỹ',
+          initials: currentUser.initials || (currentUser.email ? currentUser.email[0].toUpperCase() : 'U')
+        });
+      }
+      
+      try {
+        const counts = await DataAdapter.getPendingCounts();
+        setPendingCounts(counts || { approvals: 0, pending: 0 });
+      } catch(e) { console.error(e); }
+    }
+    load();
+  }, []);
 
   return (
     <aside className="sidebar">
@@ -202,6 +217,18 @@ function Sidebar() {
 // ── Header ───────────────────────────────────────────────────────────────────
 function Header() {
   const { page, theme, setTheme, setShowAddTx } = useApp();
+  const [userInitials, setUserInitials] = useState('U');
+  
+  useEffect(() => {
+    async function load() {
+      const u = await DataAdapter.getCurrentUser();
+      if (u) {
+        setUserInitials(u.initials || (u.email ? u.email[0].toUpperCase() : 'U'));
+      }
+    }
+    load();
+  }, []);
+
   const today = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
   const isPersonal = PERSONAL_PAGES.has(page);
 
@@ -243,9 +270,8 @@ function Header() {
           <span className="notif-dot" />
         </div>
         <div className="user-avatar" style={{ width: 34, height: 34, fontSize: 12, cursor: 'pointer', borderRadius: 9, border: '2px solid var(--border)' }}>
-          {MOCK_DATA.user.initials}
+          {userInitials}
         </div>
-        {/* user avatar — MOCK_DATA.user is the local session user object */}
       </div>
     </header>
   );

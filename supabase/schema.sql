@@ -287,3 +287,92 @@ GROUP BY f.id, f.organization_id, f.name, f.initial_balance;
 -- ============================================================
 -- INSERT INTO organizations (id, name, slug) VALUES (uuid_generate_v4(), 'Công ty ABC', 'abc-corp');
 -- (Thêm categories, members, fund_accounts, transactions...)
+
+-- ============================================================
+--  APPROVAL REQUESTS (Yêu cầu phê duyệt)
+-- ============================================================
+CREATE TABLE approval_requests (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  req_by          UUID REFERENCES members(id) ON DELETE CASCADE,
+  amount          NUMERIC(15,2) NOT NULL CHECK (amount > 0),
+  category_id     UUID REFERENCES categories(id) ON DELETE SET NULL,
+  description     TEXT NOT NULL,
+  status          TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  req_date        DATE NOT NULL DEFAULT CURRENT_DATE,
+  attach_url      TEXT,
+  note            TEXT,
+  approved_date   DATE,
+  approver_id     UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE approval_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "org_select" ON approval_requests FOR SELECT USING (organization_id = auth.org_id());
+CREATE POLICY "write_policy" ON approval_requests FOR ALL USING (organization_id = auth.org_id()) WITH CHECK (auth.user_role() IN ('admin','treasurer'));
+
+-- ============================================================
+--  PERSONAL FINANCE (Tài chính cá nhân)
+-- ============================================================
+CREATE TABLE personal_wallets (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  profile_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name            TEXT NOT NULL,
+  type            TEXT NOT NULL CHECK (type IN ('cash', 'atm', 'credit')),
+  balance         NUMERIC(15,2) DEFAULT 0,
+  credit_limit    NUMERIC(15,2),
+  color           TEXT DEFAULT '#059669',
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE personal_categories (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  profile_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  group_key       TEXT NOT NULL CHECK (group_key IN ('fixed', 'daily', 'lifestyle', 'others')),
+  name            TEXT NOT NULL,
+  color           TEXT DEFAULT '#7C3AED',
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE personal_transactions (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  profile_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  date            DATE NOT NULL DEFAULT CURRENT_DATE,
+  amount          NUMERIC(15,2) NOT NULL CHECK (amount > 0),
+  category_id     UUID REFERENCES personal_categories(id) ON DELETE SET NULL,
+  wallet_id       UUID REFERENCES personal_wallets(id) ON DELETE SET NULL,
+  note            TEXT,
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE personal_budgets (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  profile_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  monthly_total   NUMERIC(15,2) DEFAULT 0,
+  fixed_limit     NUMERIC(15,2) DEFAULT 0,
+  daily_limit     NUMERIC(15,2) DEFAULT 0,
+  lifestyle_limit NUMERIC(15,2) DEFAULT 0,
+  others_limit    NUMERIC(15,2) DEFAULT 0,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (profile_id)
+);
+
+CREATE TABLE personal_salary (
+  profile_id      UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+  monthly_salary  NUMERIC(15,2) DEFAULT 0,
+  salary_day      SMALLINT DEFAULT 1 CHECK (salary_day BETWEEN 1 AND 31),
+  updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS cho Personal Finance
+ALTER TABLE personal_wallets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE personal_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE personal_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE personal_budgets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE personal_salary ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "personal_select" ON personal_wallets FOR ALL USING (profile_id = auth.uid());
+CREATE POLICY "personal_select" ON personal_categories FOR ALL USING (profile_id = auth.uid());
+CREATE POLICY "personal_select" ON personal_transactions FOR ALL USING (profile_id = auth.uid());
+CREATE POLICY "personal_select" ON personal_budgets FOR ALL USING (profile_id = auth.uid());
+CREATE POLICY "personal_select" ON personal_salary FOR ALL USING (profile_id = auth.uid());
