@@ -1,0 +1,23 @@
+# Supabase config (contains sensitive keys)
+supabase-config.js
+
+# Node modules (if using npm later)
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
