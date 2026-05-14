@@ -1,5 +1,6 @@
 
-const { useState, useMemo } = React;
+
+import React, {  useState, useMemo  } from 'react';
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 function getSpendByGroup(txList, cats, monthPrefix) {
@@ -941,4 +942,4 @@ function SavingsGoals() {
   );
 }
 
-Object.assign(window, { MyWallet, DailySpend, SavingsGoals });
+export {  MyWallet, DailySpend, SavingsGoals  };

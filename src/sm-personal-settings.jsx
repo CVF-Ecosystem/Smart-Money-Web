@@ -1,5 +1,6 @@
 
-const { useState } = React;
+
+import React, {  useState  } from 'react';
 
 // ── Personal Category Modal ───────────────────────────────────────────────────
 function PCatModal({ cat, defaultGroup, groups, onClose, onSave }) {
@@ -318,4 +319,4 @@ function PersonalSettings() {
   );
 }
 
-Object.assign(window, { PersonalSettings });
+export {  PersonalSettings  };

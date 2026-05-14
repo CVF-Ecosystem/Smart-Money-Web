@@ -1,6 +1,8 @@
+import React from 'react';
+
 
 // Icon library — all 24x24 SVG stroke icons
-const IC = {};
+export const IC = {};
 const _s = (s) => ({ xmlns: "http://www.w3.org/2000/svg", width: s, height: s, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.75", strokeLinecap: "round", strokeLinejoin: "round" });
 
 IC.grid       = (s=16) => <svg {..._s(s)}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>;
@@ -53,4 +55,4 @@ IC.tag        = (s=16) => <svg {..._s(s)}><path d="M20.59 13.41l-7.17 7.17a2 2 0
 IC.zap        = (s=16) => <svg {..._s(s)}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
 IC.eye        = (s=16) => <svg {..._s(s)}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
-Object.assign(window, { IC });
+export {  IC  };

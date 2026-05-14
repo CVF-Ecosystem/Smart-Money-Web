@@ -1,5 +1,6 @@
 
-const { useState, useMemo, useEffect } = React;
+
+import React, {  useState, useMemo, useEffect  } from 'react';
 
 // ── Mini SVG Bar Chart ────────────────────────────────────────────────────────
 function BarChart({ data }) {
@@ -402,4 +403,4 @@ function Dashboard() {
   );
 }
 
-Object.assign(window, { Dashboard });
+export {  Dashboard  };

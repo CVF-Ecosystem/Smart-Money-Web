@@ -1,10 +1,11 @@
+
 'use strict';
 
 const currentYear = new Date().getFullYear();
 const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 const currentPrefix = `${currentYear}-${currentMonth}`;
 
-const MOCK_DATA = {
+export const MOCK_DATA = {
   user: { id: 'u1', name: 'Nguyễn Thủ Quỹ', email: 'thuquy@company.vn', role: 'Thủ quỹ', initials: 'TQ' },
 
   /* ── FUND DATA ─────────────────────────────────────────────────────────── */
@@ -195,7 +196,7 @@ MOCK_DATA.members.forEach(m => {
 });
 
 /* ── Utils ───────────────────────────────────────────────────────────────── */
-function formatVND(amount) {
+export function formatVND(amount) {
   if (!amount && amount !== 0) return '0 đ';
   const abs = Math.abs(amount);
   if (abs >= 1000000) {
@@ -224,8 +225,8 @@ function getWalletById(id) { return MOCK_DATA.personalWallets.find(w => w.id ===
 function getMonthIncome(p)  { return MOCK_DATA.transactions.filter(t => t.type === 'income'  && t.date.startsWith(p)).reduce((s, t) => s + t.amount, 0); }
 function getMonthExpense(p) { return MOCK_DATA.transactions.filter(t => t.type === 'expense' && t.date.startsWith(p)).reduce((s, t) => s + t.amount, 0); }
 
-Object.assign(window, {
+export { 
   MOCK_DATA, formatVND, formatVNDFull, formatDate, formatTS,
   getCatById, getMemberById, getPCatById, getWalletById,
   getMonthIncome, getMonthExpense,
-});
+ };

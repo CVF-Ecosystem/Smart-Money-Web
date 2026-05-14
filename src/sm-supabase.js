@@ -1,3 +1,5 @@
+
+import { createClient } from '@supabase/supabase-js';
 'use strict';
 
 /* ============================================================================
@@ -762,7 +764,7 @@ async function deletePersonalTransaction(id) {
 
 // ── Export API ───────────────────────────────────────────────────────────────
 
-window.SupabaseService = {
+export const SupabaseService = {
   // Setup
   initSupabase,
   isSupabaseReady,

@@ -1,5 +1,6 @@
 
-const { useState, useEffect } = React;
+
+import React, {  useState, useEffect  } from 'react';
 
 // ── Members Page ─────────────────────────────────────────────────────────────
 function Members() {
@@ -1423,4 +1424,4 @@ function Settings() {
   );
 }
 
-Object.assign(window, { Members, Reports, Categories, Budgets, Recurring, Funds, ImportExport, Settings });
+export {  Members, Reports, Categories, Budgets, Recurring, Funds, ImportExport, Settings  };

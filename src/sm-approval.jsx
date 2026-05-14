@@ -1,5 +1,6 @@
 
-const { useState, useMemo } = React;
+
+import React, {  useState, useMemo  } from 'react';
 
 // ── Action Modal (Approve / Reject) ───────────────────────────────────────────
 function ActionModal({ req, mode, onClose, onConfirm }) {
@@ -356,4 +357,4 @@ function AuditLog() {
   );
 }
 
-Object.assign(window, { Approvals, AuditLog });
+export {  Approvals, AuditLog  };

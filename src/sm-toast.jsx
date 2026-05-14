@@ -1,4 +1,5 @@
-const { useState, useEffect, useCallback, createContext, useContext } = React;
+import React, {  useState, useEffect, useCallback, createContext, useContext  } from 'react';
+
 
 const ToastCtx = createContext(null);
 
@@ -35,7 +36,7 @@ const ToastProvider = ({ children }) => {
   );
 };
 
-window.Toast = {
+export const Toast = {
   show: (msg, type) => {
     if (addToastFn) addToastFn(msg, type);
     else console.warn('ToastProvider not mounted', msg);
@@ -45,4 +46,4 @@ window.Toast = {
   info: msg => window.Toast.show(msg, 'info')
 };
 
-window.ToastProvider = ToastProvider;
+export { ToastProvider };

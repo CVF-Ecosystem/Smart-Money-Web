@@ -1,5 +1,7 @@
 
-const { useState } = React;
+
+import React, {  useState  } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 // ── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
@@ -118,27 +120,27 @@ class ErrorBoundary extends React.Component {
 
 // ── Page Router ───────────────────────────────────────────────────────────────
 function PageContent() {
-  const { page } = useApp();
-  const map = {
-    dashboard:    Dashboard,
-    transactions: Transactions,
-    members:      Members,
-    reports:      Reports,
-    categories:   Categories,
-    budgets:      Budgets,
-    recurring:    Recurring,
-    funds:        Funds,
-    import:       ImportExport,
-    settings:     Settings,
-    approvals:    Approvals,
-    audit:        AuditLog,
-    'my-wallet':         MyWallet,
-    'daily-spend':       DailySpend,
-    savings:             SavingsGoals,
-    'personal-settings': PersonalSettings,
-  };
-  const Page = map[page] || Dashboard;
-  return <Page key={page} />;
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/transactions" element={<Transactions />} />
+      <Route path="/members" element={<Members />} />
+      <Route path="/reports" element={<Reports />} />
+      <Route path="/categories" element={<Categories />} />
+      <Route path="/budgets" element={<Budgets />} />
+      <Route path="/recurring" element={<Recurring />} />
+      <Route path="/funds" element={<Funds />} />
+      <Route path="/import" element={<ImportExport />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/approvals" element={<Approvals />} />
+      <Route path="/audit" element={<AuditLog />} />
+      <Route path="/my-wallet" element={<MyWallet />} />
+      <Route path="/daily-spend" element={<DailySpend />} />
+      <Route path="/savings" element={<SavingsGoals />} />
+      <Route path="/personal-settings" element={<PersonalSettings />} />
+    </Routes>
+  );
 }
 
 // ── App Root ──────────────────────────────────────────────────────────────────
@@ -240,9 +242,11 @@ const _spinStyle = document.createElement('style');
 _spinStyle.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
 document.head.appendChild(_spinStyle);
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+
 root.render(
   <ToastProvider>
     <App />
   </ToastProvider>
 );
+
+export default App;

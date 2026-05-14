@@ -1,5 +1,6 @@
 
-const { useState, useMemo, useEffect } = React;
+
+import React, {  useState, useMemo, useEffect  } from 'react';
 
 // ── Transaction Detail Modal ──────────────────────────────────────────────────
 function TxDetailModal({ tx, onClose, onEdit }) {
@@ -404,4 +405,4 @@ function Transactions() {
   );
 }
 
-Object.assign(window, { Transactions });
+export {  Transactions  };

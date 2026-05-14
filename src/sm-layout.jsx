@@ -1,5 +1,7 @@
 
-const { createContext, useContext, useState, useEffect } = React;
+
+import React, {  createContext, useContext, useState, useEffect  } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // ── App Context ──────────────────────────────────────────────────────────────
 const AppCtx = createContext(null);
@@ -8,7 +10,6 @@ const useApp = () => useContext(AppCtx);
 const PERSONAL_PAGES = new Set(['my-wallet', 'daily-spend', 'savings', 'personal-settings']);
 
 function AppProvider({ children }) {
-  const [page, setPage]           = useState('dashboard');
   const [theme, setTheme]         = useState('light');
   const [lang, setLang]           = useState('vi');
   const [showAddTx, setShowAddTx] = useState(false);
@@ -16,7 +17,7 @@ function AppProvider({ children }) {
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
 
   return (
-    <AppCtx.Provider value={{ page, setPage, theme, setTheme, lang, setLang, showAddTx, setShowAddTx }}>
+    <AppCtx.Provider value={{ theme, setTheme, lang, setLang, showAddTx, setShowAddTx }}>
       {children}
     </AppCtx.Provider>
   );
@@ -70,8 +71,12 @@ const PAGE_TITLES = {
 };
 
 // ── Nav Item ─────────────────────────────────────────────────────────────────
-function NavItem({ item, active, isPersonal, pendingCounts }) {
-  const { setPage } = useApp();
+function NavItem({ item, isPersonal, pendingCounts }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const path = '/' + item.id;
+  const active = location.pathname === path || (location.pathname === '/' && item.id === 'dashboard');
+
   const badgeVal = item.badge === 'approval' ? pendingCounts.approvals
                  : item.badge === 'pending'  ? pendingCounts.pending
                  : 0;
@@ -84,7 +89,7 @@ function NavItem({ item, active, isPersonal, pendingCounts }) {
     <div
       className={'nav-item' + (active ? ' active' : '')}
       style={active ? activeStyle : {}}
-      onClick={() => setPage(item.id)}
+      onClick={() => navigate(path)}
     >
       {IC[item.icon] ? IC[item.icon](16) : IC.grid(16)}
       <span style={{ flex: 1 }}>{item.label}</span>
@@ -101,7 +106,6 @@ function NavItem({ item, active, isPersonal, pendingCounts }) {
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar() {
-  const { page } = useApp();
   const [user, setUser] = useState({ name: '', role: '', initials: '' });
   const [pendingCounts, setPendingCounts] = useState({ approvals: 0, pending: 0 });
 
@@ -160,7 +164,6 @@ function Sidebar() {
             {group.items.map(item => (
               <NavItem
                 key={item.id} item={item}
-                active={page === item.id}
                 isPersonal={false}
                 pendingCounts={pendingCounts}
               />
@@ -179,7 +182,7 @@ function Sidebar() {
           </div>
           <div style={{ margin: '6px 0 2px', padding: '4px', borderRadius: 10, background: 'rgba(13,148,136,0.06)', border: '1px solid rgba(13,148,136,0.12)' }}>
             {NAV_PERSONAL[0].items.map(item => (
-              <NavItem key={item.id} item={item} active={page === item.id} isPersonal={true} pendingCounts={pendingCounts} />
+              <NavItem key={item.id} item={item} isPersonal={true} pendingCounts={pendingCounts} />
             ))}
           </div>
         </div>
@@ -189,7 +192,7 @@ function Sidebar() {
           <div key={group.section} className="sidebar-section">
             <div className="sidebar-section-label">{group.section}</div>
             {group.items.map(item => (
-              <NavItem key={item.id} item={item} active={page === item.id} isPersonal={false} pendingCounts={pendingCounts} />
+              <NavItem key={item.id} item={item} isPersonal={false} pendingCounts={pendingCounts} />
             ))}
           </div>
         ))}
@@ -216,7 +219,9 @@ function Sidebar() {
 
 // ── Header ───────────────────────────────────────────────────────────────────
 function Header() {
-  const { page, theme, setTheme, setShowAddTx } = useApp();
+  const { theme, setTheme, setShowAddTx } = useApp();
+  const location = useLocation();
+  const page = location.pathname === '/' ? 'dashboard' : location.pathname.substring(1);
   const [userInitials, setUserInitials] = useState('U');
   
   useEffect(() => {
@@ -292,4 +297,4 @@ function Layout({ children }) {
   );
 }
 
-Object.assign(window, { AppCtx, AppProvider, useApp, Layout, PERSONAL_PAGES });
+export {  AppCtx, AppProvider, useApp, Layout, PERSONAL_PAGES  };
