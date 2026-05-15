@@ -1,4 +1,4 @@
-import { MOCK_DATA } from './sm-data.js';
+import { MOCK_DATA, saveToLocal } from './sm-data.js';
 import { SupabaseService } from './sm-supabase.js';
 
 /* ============================================================================
@@ -7,10 +7,16 @@ import { SupabaseService } from './sm-supabase.js';
  * ============================================================================ */
 
 const DataAdapter = {
-  // ── Mode Detection ─────────────────────────────────────────────────────────
+  // ── Mode Detection & Local Storage ──────────────────────────────────────────
   
   isSupabaseMode() {
     return SupabaseService && SupabaseService.isSupabaseReady && SupabaseService.isSupabaseReady();
+  },
+  
+  _saveLocal() {
+    if (!this.isSupabaseMode()) {
+      saveToLocal();
+    }
   },
   
   // ── Auth ───────────────────────────────────────────────────────────────────
@@ -67,6 +73,7 @@ const DataAdapter = {
       ...category
     };
     MOCK_DATA.categories.push(newCat);
+    this._saveLocal();
     return newCat;
   },
   
@@ -76,7 +83,10 @@ const DataAdapter = {
     }
     // Mock mode
     const cat = MOCK_DATA.categories.find(c => c.id === id);
-    if (cat) Object.assign(cat, updates);
+    if (cat) {
+      Object.assign(cat, updates);
+      this._saveLocal();
+    }
     return cat;
   },
   
@@ -86,7 +96,10 @@ const DataAdapter = {
     }
     // Mock mode
     const idx = MOCK_DATA.categories.findIndex(c => c.id === id);
-    if (idx >= 0) MOCK_DATA.categories.splice(idx, 1);
+    if (idx >= 0) {
+      MOCK_DATA.categories.splice(idx, 1);
+      this._saveLocal();
+    }
   },
   
   // ── Members ────────────────────────────────────────────────────────────────
@@ -111,6 +124,7 @@ const DataAdapter = {
       status: 'unpaid'
     };
     MOCK_DATA.members.push(newMem);
+    this._saveLocal();
     return newMem;
   },
   
@@ -120,7 +134,10 @@ const DataAdapter = {
     }
     // Mock mode
     const mem = MOCK_DATA.members.find(m => m.id === id);
-    if (mem) Object.assign(mem, updates);
+    if (mem) {
+      Object.assign(mem, updates);
+      this._saveLocal();
+    }
     return mem;
   },
   
@@ -130,7 +147,10 @@ const DataAdapter = {
     }
     // Mock mode
     const idx = MOCK_DATA.members.findIndex(m => m.id === id);
-    if (idx >= 0) MOCK_DATA.members.splice(idx, 1);
+    if (idx >= 0) {
+      MOCK_DATA.members.splice(idx, 1);
+      this._saveLocal();
+    }
   },
   
   // ── Transactions ───────────────────────────────────────────────────────────
@@ -236,6 +256,7 @@ const DataAdapter = {
       spent: 0
     };
     MOCK_DATA.budgets.push(newBudget);
+    this._saveLocal();
     return newBudget;
   },
   
@@ -244,7 +265,10 @@ const DataAdapter = {
       return await SupabaseService.updateBudget(id, updates);
     }
     const budget = MOCK_DATA.budgets.find(b => b.id === id);
-    if (budget) Object.assign(budget, updates);
+    if (budget) {
+      Object.assign(budget, updates);
+      this._saveLocal();
+    }
     return budget;
   },
   
@@ -253,7 +277,10 @@ const DataAdapter = {
       return await SupabaseService.deleteBudget(id);
     }
     const idx = MOCK_DATA.budgets.findIndex(b => b.id === id);
-    if (idx >= 0) MOCK_DATA.budgets.splice(idx, 1);
+    if (idx >= 0) {
+      MOCK_DATA.budgets.splice(idx, 1);
+      this._saveLocal();
+    }
   },
   
   // ── Recurring Transactions ─────────────────────────────────────────────────
@@ -274,6 +301,7 @@ const DataAdapter = {
       ...recurring
     };
     MOCK_DATA.recurring.push(newRec);
+    this._saveLocal();
     return newRec;
   },
   
@@ -282,7 +310,10 @@ const DataAdapter = {
       return await SupabaseService.updateRecurringTransaction(id, updates);
     }
     const rec = MOCK_DATA.recurring.find(r => r.id === id);
-    if (rec) Object.assign(rec, updates);
+    if (rec) {
+      Object.assign(rec, updates);
+      this._saveLocal();
+    }
     return rec;
   },
   
@@ -291,7 +322,10 @@ const DataAdapter = {
       return await SupabaseService.deleteRecurringTransaction(id);
     }
     const idx = MOCK_DATA.recurring.findIndex(r => r.id === id);
-    if (idx >= 0) MOCK_DATA.recurring.splice(idx, 1);
+    if (idx >= 0) {
+      MOCK_DATA.recurring.splice(idx, 1);
+      this._saveLocal();
+    }
   },
   
   async processRecurringTransactions() {
@@ -331,6 +365,8 @@ const DataAdapter = {
       rec.lastRunDate = today;
       rec.nextRunDate = nextDate.toISOString().split('T')[0];
     }
+    
+    if (created.length > 0) this._saveLocal();
     
     return created;
   },
@@ -435,6 +471,7 @@ const DataAdapter = {
       req.note = note;
       req.approvedDate = new Date().toISOString().split('T')[0];
       req.approver = MOCK_DATA.user?.name || 'Thủ quỹ';
+      this._saveLocal();
     }
     return req;
   },
@@ -448,6 +485,7 @@ const DataAdapter = {
       req.status = 'rejected';
       req.note = note;
       req.approver = MOCK_DATA.user?.name || 'Thủ quỹ';
+      this._saveLocal();
     }
     return req;
   },
@@ -476,6 +514,7 @@ const DataAdapter = {
     }
     const newTx = { id: 'pt_' + Date.now(), ...tx };
     MOCK_DATA.personalTransactions.unshift(newTx);
+    this._saveLocal();
     return newTx;
   },
 
@@ -484,7 +523,10 @@ const DataAdapter = {
       return await SupabaseService.updatePersonalTransaction(id, updates);
     }
     const tx = MOCK_DATA.personalTransactions.find(t => t.id === id);
-    if (tx) Object.assign(tx, updates);
+    if (tx) {
+      Object.assign(tx, updates);
+      this._saveLocal();
+    }
     return tx;
   },
 
@@ -493,7 +535,10 @@ const DataAdapter = {
       return await SupabaseService.deletePersonalTransaction(id);
     }
     const idx = MOCK_DATA.personalTransactions.findIndex(t => t.id === id);
-    if (idx >= 0) MOCK_DATA.personalTransactions.splice(idx, 1);
+    if (idx >= 0) {
+      MOCK_DATA.personalTransactions.splice(idx, 1);
+      this._saveLocal();
+    }
   },
 
   async updatePersonalSalary({ monthlySalary, salaryDay }) {
@@ -502,6 +547,7 @@ const DataAdapter = {
     }
     // Mock mode: update in-memory
     MOCK_DATA.salaryInfo = { ...MOCK_DATA.salaryInfo, monthlySalary, salaryDay };
+    this._saveLocal();
     return MOCK_DATA.salaryInfo;
   },
 
@@ -511,6 +557,7 @@ const DataAdapter = {
     }
     // Mock mode: update in-memory
     MOCK_DATA.personalBudgets = { ...MOCK_DATA.personalBudgets, monthly, categories };
+    this._saveLocal();
     return MOCK_DATA.personalBudgets;
   },
 
@@ -520,6 +567,7 @@ const DataAdapter = {
     }
     const newCat = { id: 'pc_' + Date.now(), ...cat };
     MOCK_DATA.personalCategories.push(newCat);
+    this._saveLocal();
     return newCat;
   },
 
@@ -528,7 +576,10 @@ const DataAdapter = {
       return await SupabaseService.updatePersonalCategory(id, updates);
     }
     const cat = MOCK_DATA.personalCategories.find(c => c.id === id);
-    if (cat) Object.assign(cat, updates);
+    if (cat) {
+      Object.assign(cat, updates);
+      this._saveLocal();
+    }
     return cat;
   },
 
@@ -537,7 +588,10 @@ const DataAdapter = {
       return await SupabaseService.deletePersonalCategory(id);
     }
     const idx = MOCK_DATA.personalCategories.findIndex(c => c.id === id);
-    if (idx >= 0) MOCK_DATA.personalCategories.splice(idx, 1);
+    if (idx >= 0) {
+      MOCK_DATA.personalCategories.splice(idx, 1);
+      this._saveLocal();
+    }
   },
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -570,6 +624,9 @@ const DataAdapter = {
       m.totalDue = due;
       m.status = paid >= due ? 'paid' : paid > 0 ? 'partial' : 'unpaid';
     });
+    
+    // Save to local storage after recalculating stats
+    this._saveLocal();
   },
 };
 

@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import { ConfirmDialog } from './sm-confirm.jsx';
 import { DataAdapter } from './sm-data-adapter.js';
-import { MOCK_DATA } from './sm-data.js';
+import { MOCK_DATA, saveToLocal } from './sm-data.js';
 
 /* ============================================================================
  *  Import/Export Logic — Phase 2
@@ -370,6 +370,8 @@ const ImportExportService = {
               MOCK_DATA.recurring = backup.data.recurring;
               results.recurring = backup.data.recurring.length;
             }
+            
+            saveToLocal();
             
             resolve({ success: true, ...results });
             return;

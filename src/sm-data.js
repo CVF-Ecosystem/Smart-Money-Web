@@ -226,3 +226,37 @@ function getMonthIncome(p)  { return MOCK_DATA.transactions.filter(t => t.type =
 function getMonthExpense(p) { return MOCK_DATA.transactions.filter(t => t.type === 'expense' && t.date.startsWith(p)).reduce((s, t) => s + t.amount, 0); }
 
 export { formatVNDFull, formatDate, formatTS, getCatById, getMemberById, getPCatById, getWalletById, getMonthIncome, getMonthExpense };
+
+/* ── Local Storage Persistence ───────────────────────────────────────────── */
+const STORAGE_KEY = 'SmartMoney_LocalData';
+
+export function loadFromLocal() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge all top-level keys into MOCK_DATA
+      Object.keys(parsed).forEach(key => {
+        if (MOCK_DATA.hasOwnProperty(key)) {
+          MOCK_DATA[key] = parsed[key];
+        }
+      });
+      console.log('✅ Loaded user data from LocalStorage');
+    }
+  } catch (e) {
+    console.error('Failed to load local data', e);
+  }
+}
+
+export function saveToLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_DATA));
+  } catch (e) {
+    console.error('Failed to save local data', e);
+  }
+}
+
+// Auto-load on initialization
+loadFromLocal();
+
+export { saveToLocal };
