@@ -5,7 +5,7 @@ import { IC } from '../sm-icons.jsx';
 import { formatVND, formatVNDFull } from '../sm-data.js';
 import { MOCK_DATA } from '../sm-data.js';
 
-import { importTransactionsFromExcel, exportToExcel, backupData, restoreData } from '../sm-import-export.js';
+import { ImportExportService, importTransactionsFromExcel, exportToExcel, backupData, restoreData } from '../sm-import-export.js';
 // ── Import/Export Page ────────────────────────────────────────────────────────
 function ImportExport() {
   const [importing, setImporting] = React.useState(false);
