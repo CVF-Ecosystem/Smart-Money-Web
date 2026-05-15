@@ -258,5 +258,3 @@ export function saveToLocal() {
 
 // Auto-load on initialization
 loadFromLocal();
-
-export { saveToLocal };
