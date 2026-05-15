@@ -117,7 +117,7 @@
                 Cai Nghiện Tiêu Hoang
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>
-            <a href="/app/" target="_blank" class="px-8 py-4 glass-panel hover:bg-slate-800 font-display font-semibold text-lg rounded-2xl transition-all flex items-center justify-center gap-2 group border border-slate-700">
+            <a href="#" id="demo-btn" class="px-8 py-4 glass-panel hover:bg-slate-800 font-display font-semibold text-lg rounded-2xl transition-all flex items-center justify-center gap-2 group border border-slate-700">
                 Xem Demo Hết Nghèo
                 <span class="group-hover:rotate-12 transition-transform">✨</span>
             </a>
@@ -131,7 +131,7 @@
     </header>
 
     <!-- MOCKUP UI DEMO PREVIEW -->
-    <section class="relative z-10 container mx-auto px-6 pb-24 flex justify-center">
+    <section id="mockup-section" class="relative z-10 container mx-auto px-6 pb-24 flex justify-center">
         <div class="w-full max-w-4xl rounded-2xl p-2 bg-gradient-to-b from-slate-700 to-slate-900 shadow-2xl shadow-brand-900/50 transform -rotate-1 hover:rotate-0 transition-transform duration-500">
             <div class="rounded-xl overflow-hidden glass-panel border border-slate-700 relative bg-slate-950">
                 <!-- Fake Mac Window Header -->
@@ -147,7 +147,7 @@
                         <div class="h-8 w-1/3 bg-slate-800 rounded-lg animate-pulse"></div>
                         <div class="h-32 w-full bg-gradient-to-br from-brand-900/40 to-slate-800/50 rounded-xl border border-brand-500/20 relative overflow-hidden">
                             <div class="absolute top-4 left-4 text-xs font-bold text-brand-400 tracking-wider">SỐ DƯ HIỆN TẠI</div>
-                            <div class="absolute bottom-4 left-4 text-4xl font-display font-bold">14,500,000đ</div>
+                            <div id="mockup-balance" class="absolute bottom-4 left-4 text-4xl font-display font-bold transition-colors duration-300">14,500,000đ</div>
                             <div class="absolute right-4 bottom-4 text-6xl opacity-20">💰</div>
                         </div>
                         <div class="flex gap-4">
@@ -299,5 +299,83 @@
         </div>
     </footer>
 
+    <!-- Confetti & Interactive Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        document.getElementById('demo-btn').addEventListener('click', function(e) {
+            if(this.getAttribute('href') !== '#') return; // Default behavior if it's already changed
+            
+            e.preventDefault();
+            
+            // 1. Pháo hoa tiền rơi
+            var scalar = 2;
+            var money = confetti.shapeFromText({ text: '💸', scalar });
+            var diamond = confetti.shapeFromText({ text: '💎', scalar });
+            var pig = confetti.shapeFromText({ text: '🐷', scalar });
+            
+            var defaults = {
+                spread: 360,
+                ticks: 200,
+                gravity: 0.8,
+                decay: 0.94,
+                startVelocity: 30,
+                shapes: [money, diamond, pig],
+                scalar: scalar
+            };
+            
+            function shoot() {
+                confetti({ ...defaults, particleCount: 30 });
+            }
+            setTimeout(shoot, 0);
+            setTimeout(shoot, 200);
+            setTimeout(shoot, 400);
+
+            // 2. Cuộn mượt mà đến khung UI giả lập
+            document.getElementById('mockup-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 3. Hiệu ứng số dư tăng chóng mặt
+            const balEl = document.getElementById('mockup-balance');
+            balEl.style.color = '#10b981'; // emerald-500
+            balEl.style.textShadow = '0 0 20px rgba(16,185,129,0.5)';
+            
+            let start = 14500000;
+            const end = 999999999; // Giàu sụ
+            const duration = 2500;
+            const startTime = performance.now();
+            
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease out cubic
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (end - start) * easeProgress);
+                balEl.innerText = current.toLocaleString('vi-VN') + 'đ';
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                }
+            }
+            requestAnimationFrame(updateCounter);
+
+            // 4. Bật thông báo khịa vui
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-24 right-5 md:right-10 bg-brand-500 text-white px-6 py-5 rounded-2xl shadow-[0_10px_40px_rgba(20,184,166,0.4)] z-[100] transform transition-all duration-500 translate-x-[150%] font-display font-bold max-w-sm border border-brand-400 flex gap-4 items-start';
+            toast.innerHTML = '<div class="text-3xl">🤑</div><div><div class="text-sm text-brand-100 uppercase tracking-wider mb-1">Cộng tiền tưởng tượng</div><div class="text-lg leading-snug">Bạn vừa nhận 985 triệu VNĐ ảo!<br/><span class="text-sm font-sans font-medium text-brand-50 mt-2 block">Thấy giàu chưa? Giờ thì vào app thật để bớt Ảo Tưởng và quản lý chi tiêu đi!</span></div></div>';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-x-[150%]'), 300);
+            setTimeout(() => {
+                toast.classList.add('translate-x-[150%]');
+                setTimeout(() => toast.remove(), 500);
+            }, 6000);
+
+            // 5. Thay đổi nút bấm sang Link thật
+            this.innerHTML = 'Thực Tế Phũ Phàng. Vào App Thật Ngay 🚀';
+            this.setAttribute('href', '/app/');
+            this.classList.replace('bg-slate-800', 'bg-rose-500');
+            this.classList.replace('border-slate-700', 'border-rose-400');
+            this.classList.replace('hover:bg-slate-800', 'hover:bg-rose-600');
+            this.classList.add('text-white', 'shadow-[0_0_30px_rgba(244,63,94,0.4)]');
+        });
+    </script>
 </body>
 </html>
