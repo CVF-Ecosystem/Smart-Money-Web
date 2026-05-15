@@ -6,41 +6,46 @@ import { SupabaseService } from './sm-supabase.js';
  *  Components sẽ gọi DataAdapter thay vì trực tiếp gọi SupabaseService
  * ============================================================================ */
 
+const MOCK_SESSION_KEY = 'SmartMoney_Session';
+
 const DataAdapter = {
   // ── Mode Detection & Local Storage ──────────────────────────────────────────
-  
+
   isSupabaseMode() {
     return SupabaseService && SupabaseService.isSupabaseReady && SupabaseService.isSupabaseReady();
   },
-  
+
   _saveLocal() {
     if (!this.isSupabaseMode()) {
       saveToLocal();
     }
   },
-  
+
   // ── Auth ───────────────────────────────────────────────────────────────────
-  
+
   async signIn(email, password) {
     if (this.isSupabaseMode()) {
       return await SupabaseService.signIn(email, password);
     }
-    // Mock mode: always success
+    // Mock mode: accept any credentials, persist session flag
+    localStorage.setItem(MOCK_SESSION_KEY, '1');
     return { user: MOCK_DATA.user };
   },
-  
+
   async signOut() {
     if (this.isSupabaseMode()) {
       return await SupabaseService.signOut();
     }
-    // Mock mode: do nothing
+    // Mock mode: clear session flag so reload shows LoginScreen
+    localStorage.removeItem(MOCK_SESSION_KEY);
   },
-  
+
   async getSession() {
     if (this.isSupabaseMode()) {
       return await SupabaseService.getSession();
     }
-    // Mock mode: return mock user
+    // Mock mode: only return session if user has explicitly signed in
+    if (!localStorage.getItem(MOCK_SESSION_KEY)) return null;
     return { user: MOCK_DATA.user };
   },
   
