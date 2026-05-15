@@ -307,28 +307,30 @@
             
             e.preventDefault();
             
-            // 1. Pháo hoa tiền rơi
-            var scalar = 2;
-            var money = confetti.shapeFromText({ text: '💸', scalar });
-            var diamond = confetti.shapeFromText({ text: '💎', scalar });
-            var pig = confetti.shapeFromText({ text: '🐷', scalar });
-            
-            var defaults = {
-                spread: 360,
-                ticks: 200,
-                gravity: 0.8,
-                decay: 0.94,
-                startVelocity: 30,
-                shapes: [money, diamond, pig],
-                scalar: scalar
-            };
-            
-            function shoot() {
-                confetti({ ...defaults, particleCount: 30 });
-            }
-            setTimeout(shoot, 0);
-            setTimeout(shoot, 200);
-            setTimeout(shoot, 400);
+            // 1. Pháo hoa (Tiền & Vàng)
+            var duration = 2 * 1000;
+            var endAnim = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 7,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#10b981', '#f59e0b', '#0d9488']
+                });
+                confetti({
+                    particleCount: 7,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#10b981', '#f59e0b', '#0d9488']
+                });
+
+                if (Date.now() < endAnim) {
+                    requestAnimationFrame(frame);
+                }
+            }());
 
             // 2. Cuộn mượt mà đến khung UI giả lập
             document.getElementById('mockup-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
