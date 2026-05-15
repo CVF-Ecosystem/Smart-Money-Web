@@ -295,34 +295,6 @@ function Header({ onMenuToggle }) {
   );
 }
 
-// ── Local Mode Banner ────────────────────────────────────────────────────────
-function LocalModeBanner() {
-  const navigate = useNavigate();
-  if (DataAdapter.isSupabaseMode()) return null;
-  return (
-    <div style={{
-      background: 'rgba(217,119,6,0.1)',
-      borderBottom: '1px solid rgba(217,119,6,0.3)',
-      padding: '7px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 10,
-      fontSize: 13,
-      flexShrink: 0,
-    }}>
-      <span style={{ color: '#D97706', display: 'flex', alignItems: 'center' }}>{IC.alert(14)}</span>
-      <span style={{ color: 'var(--text-1)', flex: 1 }}>
-        Đang dùng chế độ lưu cục bộ — dữ liệu không đồng bộ đa thiết bị.
-      </span>
-      <button
-        onClick={() => navigate('/settings')}
-        style={{ background: '#D97706', color: 'white', border: 'none', borderRadius: 7, padding: '4px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
-        Kết nối Supabase →
-      </button>
-    </div>
-  );
-}
-
 // ── Layout ───────────────────────────────────────────────────────────────────
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -343,7 +315,6 @@ function Layout({ children }) {
       <Sidebar isOpen={sidebarOpen} />
       <div className="main-area">
         <Header onMenuToggle={() => setSidebarOpen(o => !o)} />
-        <LocalModeBanner />
         <main className="page-content fade-in">
           {children}
         </main>
