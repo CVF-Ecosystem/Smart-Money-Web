@@ -148,16 +148,6 @@ function Reports() {
     }
   }
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
-        <div style={{ textAlign: 'center', color: 'var(--text-3)' }}>
-          <div style={{ fontSize: 14 }}>Đang tải báo cáo...</div>
-        </div>
-      </div>
-    );
-  }
-
   // Calculate monthly chart from transactions
   const monthlyChart = React.useMemo(() => {
     const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
@@ -183,6 +173,16 @@ function Reports() {
       };
     });
   }, [members, transactions]);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+        <div style={{ textAlign: 'center', color: 'var(--text-3)' }}>
+          <div style={{ fontSize: 14 }}>Đang tải báo cáo...</div>
+        </div>
+      </div>
+    );
+  }
 
   const monthlyRows = monthlyChart;
   const totalIncome = monthlyRows.reduce((s, r) => s + r.income, 0);

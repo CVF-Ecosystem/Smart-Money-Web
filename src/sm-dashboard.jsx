@@ -1,6 +1,29 @@
 
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from './sm-layout.jsx';
+import { DataAdapter } from './sm-data-adapter.js';
+import { IC } from './sm-icons.jsx';
+import { Toast } from './sm-toast.jsx';
 
-import React, {  useState, useMemo, useEffect  } from 'react';
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const formatVND = (n) => {
+  if (!n && n !== 0) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return (n / 1e9).toFixed(1).replace('.0', '') + ' tỷ';
+  if (abs >= 1e6) return (n / 1e6).toFixed(1).replace('.0', '') + ' tr';
+  return n.toLocaleString('vi-VN') + 'đ';
+};
+const formatVNDFull = (n) => {
+  if (!n && n !== 0) return '—';
+  return Math.abs(n).toLocaleString('vi-VN') + 'đ';
+};
+const formatDate = (dateStr, short = false) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (short) return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString('vi-VN');
+};
 
 // ── Mini SVG Bar Chart ────────────────────────────────────────────────────────
 function BarChart({ data }) {
@@ -201,7 +224,9 @@ function PersonalWidget({ setPage }) {
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 function Dashboard() {
-  const { setPage, setShowAddTx } = useApp();
+  const { setShowAddTx } = useApp();
+  const navigate = useNavigate();
+  const setPage = (p) => navigate('/' + p);
   const [stats, setStats] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -227,7 +252,7 @@ function Dashboard() {
       const allIncome = txData.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
       const allExpense = txData.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
       const fundAccounts = await DataAdapter.getFundAccounts();
-      const initialBalance = fundAccounts[0]?.initial_balance || MOCK_DATA.fundAccount.initialBalance;
+      const initialBalance = fundAccounts[0]?.initial_balance || 0;
       
       setStats({
         balance: initialBalance + allIncome - allExpense,
@@ -389,7 +414,7 @@ function Dashboard() {
             </thead>
             <tbody>
               {recent.map(tx => {
-                const cat = getCatById(tx.categoryId);
+                const cat = categories.find(c => c.id === tx.categoryId);
                 return (
                   <tr key={tx.id}>
                     <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{formatDate(tx.date, true)}</td>

@@ -1,11 +1,31 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { useApp } from './sm-layout.jsx';
+import { DataAdapter } from './sm-data-adapter.js';
+import { IC } from './sm-icons.jsx';
+import { Toast } from './sm-toast.jsx';
 
-
-import React, {  useState, useMemo, useEffect  } from 'react';
+const formatVND = (n) => {
+  if (!n && n !== 0) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return (n / 1e9).toFixed(1).replace('.0', '') + ' tỷ';
+  if (abs >= 1e6) return (n / 1e6).toFixed(1).replace('.0', '') + ' tr';
+  return n.toLocaleString('vi-VN') + 'đ';
+};
+const formatVNDFull = (n) => {
+  if (!n && n !== 0) return '—';
+  return Math.abs(n).toLocaleString('vi-VN') + 'đ';
+};
+const formatDate = (dateStr, short = false) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (short) return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString('vi-VN');
+};
 
 // ── Transaction Detail Modal ──────────────────────────────────────────────────
-function TxDetailModal({ tx, onClose, onEdit }) {
-  const cat = getCatById(tx.categoryId);
-  const mem = getMemberById(tx.memberId);
+function TxDetailModal({ tx, categories, members, onClose, onEdit }) {
+  const cat = categories.find(c => c.id === tx.categoryId);
+  const mem = members.find(m => m.id === tx.memberId);
   return (
     <div className="modal-bg" onClick={onClose}>
       <div className="modal-box" style={{ maxWidth: 460 }} onClick={e => e.stopPropagation()}>
@@ -236,8 +256,8 @@ function Transactions() {
     if (monthFilter && !tx.date.startsWith(monthFilter)) return false;
     if (search) {
       const q = search.toLowerCase();
-      const cat = getCatById(tx.categoryId);
-      const mem = getMemberById(tx.memberId);
+      const cat = categories.find(c => c.id === tx.categoryId);
+      const mem = members.find(m => m.id === tx.memberId);
       return cat?.name.toLowerCase().includes(q) || cat?.code.toLowerCase().includes(q) || mem?.name.toLowerCase().includes(q) || tx.recipientName?.toLowerCase().includes(q) || tx.note?.toLowerCase().includes(q);
     }
     return true;
@@ -355,7 +375,7 @@ function Transactions() {
               {filtered.length === 0 ? (
                 <tr><td colSpan={7}><div className="empty-state">{IC.search(32)}<p>Không tìm thấy giao dịch nào</p></div></td></tr>
               ) : filtered.map(tx => {
-                const cat = getCatById(tx.categoryId);
+                const cat = categories.find(c => c.id === tx.categoryId);
                 return (
                   <tr key={tx.id}>
                     <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{formatDate(tx.date)}</td>
@@ -398,7 +418,7 @@ function Transactions() {
         )}
       </div>
 
-      {viewing  && <TxDetailModal tx={viewing}  onClose={() => setViewing(null)}  onEdit={t => { setViewing(null); setEditing(t); }} />}
+      {viewing  && <TxDetailModal tx={viewing} categories={categories} members={members} onClose={() => setViewing(null)}  onEdit={t => { setViewing(null); setEditing(t); }} />}
       {(showAddTx || editing) && <TxModal editing={editing} categories={categories} members={members} onClose={() => { setEditing(null); setShowAddTx(false); }} onSave={handleSave} />}
       {deleting  && <DeleteModal onClose={() => setDeleting(null)} onConfirm={() => handleDelete(deleting)} />}
     </div>

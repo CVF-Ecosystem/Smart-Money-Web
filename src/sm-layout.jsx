@@ -2,6 +2,8 @@
 
 import React, {  createContext, useContext, useState, useEffect  } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { IC } from './sm-icons.jsx';
+import { DataAdapter } from './sm-data-adapter.js';
 
 // ── App Context ──────────────────────────────────────────────────────────────
 const AppCtx = createContext(null);
