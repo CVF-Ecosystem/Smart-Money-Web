@@ -1,6 +1,8 @@
 
 
 import React, {  useState, useMemo  } from 'react';
+import { IC } from './sm-icons.jsx';
+import { getCatById, formatVNDFull, formatDate } from './sm-data.js';
 
 // ── Action Modal (Approve / Reject) ───────────────────────────────────────────
 function ActionModal({ req, mode, onClose, onConfirm }) {

@@ -3,7 +3,7 @@ import { ConfirmDialog } from '../sm-confirm.jsx';
 import { DataAdapter } from '../sm-data-adapter.js';
 import { Toast } from '../sm-toast.jsx';
 import { IC } from '../sm-icons.jsx';
-import { formatVND, formatVNDFull } from '../sm-data.js';
+import { formatVND, formatVNDFull, getCatById, formatDate } from '../sm-data.js';
 import { MOCK_DATA } from '../sm-data.js';
 
 // ── Recurring Page ────────────────────────────────────────────────────────────
