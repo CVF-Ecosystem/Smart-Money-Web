@@ -117,7 +117,7 @@
                 Cai Nghiện Tiêu Hoang
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>
-            <a href="#" id="demo-btn" class="px-8 py-4 glass-panel hover:bg-slate-800 font-display font-semibold text-lg rounded-2xl transition-all flex items-center justify-center gap-2 group border border-slate-700">
+            <a href="#" id="demo-btn" onclick="playEasterEgg(event, this)" class="px-8 py-4 glass-panel hover:bg-slate-800 font-display font-semibold text-lg rounded-2xl transition-all flex items-center justify-center gap-2 group border border-slate-700">
                 Xem Demo Hết Nghèo
                 <span class="group-hover:rotate-12 transition-transform">✨</span>
             </a>
@@ -302,30 +302,36 @@
     <!-- Confetti & Interactive Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
-        document.getElementById('demo-btn').addEventListener('click', function(e) {
-            if(this.getAttribute('href') !== '#') return; // Default behavior if it's already changed
+        window.playEasterEgg = function(e, btn) {
+            console.log("Demo button clicked!", btn.getAttribute('href'));
+            if(btn.getAttribute('href') !== '#') return; // Default behavior if it's already changed
             
             e.preventDefault();
+            console.log("Prevented default, starting animation...");
             
             // 1. Pháo hoa (Tiền & Vàng)
             var duration = 2 * 1000;
             var endAnim = Date.now() + duration;
 
             (function frame() {
-                confetti({
-                    particleCount: 7,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0 },
-                    colors: ['#10b981', '#f59e0b', '#0d9488']
-                });
-                confetti({
-                    particleCount: 7,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 },
-                    colors: ['#10b981', '#f59e0b', '#0d9488']
-                });
+                if (typeof confetti !== 'undefined') {
+                    confetti({
+                        particleCount: 7,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#10b981', '#f59e0b', '#0d9488'],
+                        zIndex: 9999
+                    });
+                    confetti({
+                        particleCount: 7,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#10b981', '#f59e0b', '#0d9488'],
+                        zIndex: 9999
+                    });
+                }
 
                 if (Date.now() < endAnim) {
                     requestAnimationFrame(frame);
@@ -333,30 +339,33 @@
             }());
 
             // 2. Cuộn mượt mà đến khung UI giả lập
-            document.getElementById('mockup-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const mockupSec = document.getElementById('mockup-section');
+            if (mockupSec) mockupSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             // 3. Hiệu ứng số dư tăng chóng mặt
             const balEl = document.getElementById('mockup-balance');
-            balEl.style.color = '#10b981'; // emerald-500
-            balEl.style.textShadow = '0 0 20px rgba(16,185,129,0.5)';
-            
-            let start = 14500000;
-            const end = 999999999; // Giàu sụ
-            const duration = 2500;
-            const startTime = performance.now();
-            
-            function updateCounter(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                // Ease out cubic
-                const easeProgress = 1 - Math.pow(1 - progress, 3);
-                const current = Math.floor(start + (end - start) * easeProgress);
-                balEl.innerText = current.toLocaleString('vi-VN') + 'đ';
-                if (progress < 1) {
-                    requestAnimationFrame(updateCounter);
+            if (balEl) {
+                balEl.style.color = '#10b981'; // emerald-500
+                balEl.style.textShadow = '0 0 20px rgba(16,185,129,0.5)';
+                
+                let start = 14500000;
+                const end = 999999999; // Giàu sụ
+                const durationCounter = 2500;
+                const startTime = performance.now();
+                
+                function updateCounter(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / durationCounter, 1);
+                    // Ease out cubic
+                    const easeProgress = 1 - Math.pow(1 - progress, 3);
+                    const current = Math.floor(start + (end - start) * easeProgress);
+                    balEl.innerText = current.toLocaleString('vi-VN') + 'đ';
+                    if (progress < 1) {
+                        requestAnimationFrame(updateCounter);
+                    }
                 }
+                requestAnimationFrame(updateCounter);
             }
-            requestAnimationFrame(updateCounter);
 
             // 4. Bật thông báo khịa vui
             const toast = document.createElement('div');
@@ -371,13 +380,13 @@
             }, 6000);
 
             // 5. Thay đổi nút bấm sang Link thật
-            this.innerHTML = 'Thực Tế Phũ Phàng. Vào App Thật Ngay 🚀';
-            this.setAttribute('href', '/app/');
-            this.classList.replace('bg-slate-800', 'bg-rose-500');
-            this.classList.replace('border-slate-700', 'border-rose-400');
-            this.classList.replace('hover:bg-slate-800', 'hover:bg-rose-600');
-            this.classList.add('text-white', 'shadow-[0_0_30px_rgba(244,63,94,0.4)]');
-        });
+            btn.innerHTML = 'Thực Tế Phũ Phàng. Vào App Thật Ngay 🚀';
+            btn.setAttribute('href', '/app/');
+            btn.classList.replace('bg-slate-800', 'bg-rose-500');
+            btn.classList.replace('border-slate-700', 'border-rose-400');
+            btn.classList.replace('hover:bg-slate-800', 'hover:bg-rose-600');
+            btn.classList.add('text-white', 'shadow-[0_0_30px_rgba(244,63,94,0.4)]');
+        };
     </script>
 </body>
 </html>
