@@ -642,11 +642,11 @@ function DailySpend() {
     });
   }, []);
 
+  // Open add modal from header button — must be before any early return
+  useEffect(() => { if (showAddTx) { setAddingNew(true); setShowAddTx(false); } }, [showAddTx]);
+
   if (!data) return <div style={{padding:20}}>Đang tải...</div>;
   const { categories: personalCategories, categoryGroups: personalCategoryGroups, wallets: personalWallets, budgets: personalBudgets } = data;
-
-  // Open add modal from header button
-  React.useEffect(() => { if (showAddTx) { setAddingNew(true); setShowAddTx(false); } }, [showAddTx]);
 
   function addPending() {
     const amt = Number(qAmt);
