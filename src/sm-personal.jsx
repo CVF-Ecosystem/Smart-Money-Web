@@ -645,6 +645,18 @@ function DailySpend() {
   // Open add modal from header button — must be before any early return
   useEffect(() => { if (showAddTx) { setAddingNew(true); setShowAddTx(false); } }, [showAddTx]);
 
+  // Must be before any early return — uses data safely via null guard inside
+  const filtered = useMemo(() => {
+    if (!data) return [];
+    const cats = data.categories;
+    const wals = data.wallets;
+    return txList.filter(tx => {
+      if (groupFilter !== 'all') { const cat = cats.find(c=>c.id===tx.categoryId); if (!cat||cat.group!==groupFilter) return false; }
+      if (search) { const cat = cats.find(c=>c.id===tx.categoryId); const wal = wals.find(w=>w.id===tx.walletId); const q=search.toLowerCase(); return cat?.name.toLowerCase().includes(q)||wal?.name.toLowerCase().includes(q)||tx.note?.toLowerCase().includes(q); }
+      return true;
+    });
+  }, [txList, groupFilter, search, data]);
+
   if (!data) return <div style={{padding:20}}>Đang tải...</div>;
   const { categories: personalCategories, categoryGroups: personalCategoryGroups, wallets: personalWallets, budgets: personalBudgets } = data;
 
@@ -680,12 +692,6 @@ function DailySpend() {
 
   const spendByGroup = getSpendByGroup(txList, personalCategories, mp);
   const overGroups = personalCategoryGroups.filter(g => budgetLevel(spendByGroup[g.key]||0, personalBudgets.categories[g.key]) !== 'good');
-
-  const filtered = useMemo(() => txList.filter(tx => {
-    if (groupFilter !== 'all') { const cat = personalCategories.find(c=>c.id===tx.categoryId); if (!cat||cat.group!==groupFilter) return false; }
-    if (search) { const cat = personalCategories.find(c=>c.id===tx.categoryId); const wal = personalWallets.find(w=>w.id===tx.walletId); const q=search.toLowerCase(); return cat?.name.toLowerCase().includes(q)||wal?.name.toLowerCase().includes(q)||tx.note?.toLowerCase().includes(q); }
-    return true;
-  }), [txList, groupFilter, search]);
 
   const totalFiltered = filtered.reduce((s,t)=>s+t.amount,0);
 
