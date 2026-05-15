@@ -20,12 +20,17 @@ function getLocalStorageUsedBytes() {
 
 function Settings() {
   const { theme, setTheme, lang, setLang } = useApp();
-  const [user, setUser]           = useState({ name: '', email: '', role: '', initials: '' });
-  const [sbUrl, setSbUrl]         = useState('');
-  const [sbKey, setSbKey]         = useState('');
-  const [showKey, setShowKey]     = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const [lsUsed, setLsUsed]       = useState(0);
+  const [user, setUser]               = useState({ name: '', email: '', role: '', initials: '' });
+  const [sbUrl, setSbUrl]             = useState('');
+  const [sbKey, setSbKey]             = useState('');
+  const [showKey, setShowKey]         = useState(false);
+  const [connecting, setConnecting]   = useState(false);
+  const [lsUsed, setLsUsed]           = useState(0);
+
+  // Local profile editing (mock mode only)
+  const [profileForm, setProfileForm] = useState({ name: '', email: '', password: '', role: '' });
+  const [showPass, setShowPass]       = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const isSupabase = DataAdapter.isSupabaseMode();
 
@@ -40,6 +45,11 @@ function Settings() {
       });
     }
 
+    if (!isSupabase) {
+      const p = DataAdapter.getLocalProfile();
+      setProfileForm({ name: p.name, email: p.email, password: p.password, role: p.role });
+    }
+
     try {
       const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
       if (saved) {
@@ -51,6 +61,19 @@ function Settings() {
 
     setLsUsed(getLocalStorageUsedBytes());
   }, []);
+
+  function handleSaveProfile() {
+    if (!profileForm.name.trim() || !profileForm.email.trim() || !profileForm.password.trim()) {
+      Toast.error('Vui lòng điền đầy đủ tên, email và mật khẩu');
+      return;
+    }
+    setSavingProfile(true);
+    const initials = profileForm.name.trim().split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
+    DataAdapter.updateLocalProfile({ ...profileForm, initials });
+    setUser(u => ({ ...u, name: profileForm.name, email: profileForm.email, role: profileForm.role, initials }));
+    Toast.success('Đã lưu hồ sơ — dùng thông tin mới để đăng nhập lần sau');
+    setSavingProfile(false);
+  }
 
   async function handleConnect() {
     if (!sbUrl.trim() || !sbKey.trim()) {
@@ -116,6 +139,51 @@ function Settings() {
           ))}
         </div>
       </div>
+
+      {/* Local Profile — only shown in local mode */}
+      {!isSupabase && (
+        <div className="card" style={{ padding: '20px 24px' }}>
+          <div className="section-title">Hồ sơ & Mật khẩu</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', display: 'block', marginBottom: 5 }}>Họ tên</label>
+                <input className="input" value={profileForm.name}
+                  onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="Nguyễn Thủ Quỹ" />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', display: 'block', marginBottom: 5 }}>Chức vụ</label>
+                <input className="input" value={profileForm.role}
+                  onChange={e => setProfileForm(f => ({ ...f, role: e.target.value }))}
+                  placeholder="Thủ quỹ" />
+              </div>
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', display: 'block', marginBottom: 5 }}>Email đăng nhập</label>
+              <input className="input" type="email" value={profileForm.email}
+                onChange={e => setProfileForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="user@example.com" />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', display: 'block', marginBottom: 5 }}>Mật khẩu</label>
+              <div style={{ position: 'relative' }}>
+                <input className="input" type={showPass ? 'text' : 'password'} value={profileForm.password}
+                  onChange={e => setProfileForm(f => ({ ...f, password: e.target.value }))}
+                  style={{ paddingRight: 36 }} placeholder="••••••" />
+                <button onClick={() => setShowPass(v => !v)}
+                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 4, display: 'flex', alignItems: 'center' }}>
+                  {IC.eye(15)}
+                </button>
+              </div>
+            </div>
+            <button className="btn btn-primary btn-sm" onClick={handleSaveProfile} disabled={savingProfile}
+              style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6 }}>
+              {IC.check(15)} Lưu hồ sơ
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Account */}
       <div className="card" style={{ padding: '20px 24px' }}>

@@ -28,8 +28,9 @@ import { PersonalSettings } from './sm-personal-settings.jsx';
 
 // ── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
-  const [email,    setEmail]    = useState('thuquy@company.vn');
-  const [password, setPassword] = useState('');
+  const profile = DataAdapter.getLocalProfile();
+  const [email,    setEmail]    = useState(profile.email);
+  const [password, setPassword] = useState(profile.password);
   const [loading,  setLoading]  = useState(false);
 
   async function handleLogin(e) {
@@ -101,9 +102,6 @@ function LoginScreen({ onLogin }) {
             </button>
           </form>
 
-          <div style={{ marginTop: 20, padding: '12px', background: 'var(--primary-light)', borderRadius: 8, fontSize: 12, color: 'var(--text-3)' }}>
-            <strong style={{ color: 'var(--primary)' }}>Demo:</strong> Nhập đúng email/password Supabase để đăng nhập
-          </div>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>

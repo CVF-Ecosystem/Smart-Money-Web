@@ -116,14 +116,27 @@ describe('DataAdapter — mock mode', () => {
   });
 
   describe('Auth mock mode', () => {
-    it('signIn returns mock user', async () => {
-      const result = await DataAdapter.signIn('test@test.com', 'password');
+    it('signIn rejects wrong credentials', async () => {
+      await expect(DataAdapter.signIn('wrong@email.com', 'badpass')).rejects.toThrow();
+    });
+
+    it('signIn accepts default profile credentials', async () => {
+      const profile = DataAdapter.getLocalProfile();
+      const result = await DataAdapter.signIn(profile.email, profile.password);
       expect(result).toHaveProperty('user');
     });
 
-    it('getSession returns mock session', async () => {
+    it('getSession returns session after signIn', async () => {
+      const profile = DataAdapter.getLocalProfile();
+      await DataAdapter.signIn(profile.email, profile.password);
       const session = await DataAdapter.getSession();
       expect(session).toBeTruthy();
+    });
+
+    it('getSession returns null after signOut', async () => {
+      await DataAdapter.signOut();
+      const session = await DataAdapter.getSession();
+      expect(session).toBeNull();
     });
   });
 });

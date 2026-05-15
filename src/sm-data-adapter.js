@@ -6,7 +6,16 @@ import { SupabaseService } from './sm-supabase.js';
  *  Components sẽ gọi DataAdapter thay vì trực tiếp gọi SupabaseService
  * ============================================================================ */
 
-const MOCK_SESSION_KEY = 'SmartMoney_Session';
+const MOCK_SESSION_KEY  = 'SmartMoney_Session';
+const LOCAL_PROFILE_KEY = 'SmartMoney_LocalProfile';
+
+const DEFAULT_PROFILE = {
+  name: 'Nguyễn Thủ Quỹ',
+  email: 'thuquy@company.vn',
+  password: '123456',
+  role: 'Thủ quỹ',
+  initials: 'TQ',
+};
 
 const DataAdapter = {
   // ── Mode Detection & Local Storage ──────────────────────────────────────────
@@ -21,13 +30,37 @@ const DataAdapter = {
     }
   },
 
+  // ── Local Profile (mock mode only) ─────────────────────────────────────────
+
+  getLocalProfile() {
+    try {
+      const saved = localStorage.getItem(LOCAL_PROFILE_KEY);
+      return saved ? { ...DEFAULT_PROFILE, ...JSON.parse(saved) } : { ...DEFAULT_PROFILE };
+    } catch (e) {
+      return { ...DEFAULT_PROFILE };
+    }
+  },
+
+  updateLocalProfile(updates) {
+    const current = this.getLocalProfile();
+    const next = { ...current, ...updates };
+    localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(next));
+    // Sync into MOCK_DATA so sidebar/header reflect changes immediately
+    MOCK_DATA.user = { ...MOCK_DATA.user, name: next.name, email: next.email, role: next.role, initials: next.initials };
+  },
+
   // ── Auth ───────────────────────────────────────────────────────────────────
 
   async signIn(email, password) {
     if (this.isSupabaseMode()) {
       return await SupabaseService.signIn(email, password);
     }
-    // Mock mode: accept any credentials, persist session flag
+    // Local mode: validate against stored profile
+    const profile = this.getLocalProfile();
+    if (email !== profile.email || password !== profile.password) {
+      throw new Error('Email hoặc mật khẩu không đúng');
+    }
+    MOCK_DATA.user = { ...MOCK_DATA.user, name: profile.name, email: profile.email, role: profile.role, initials: profile.initials };
     localStorage.setItem(MOCK_SESSION_KEY, '1');
     return { user: MOCK_DATA.user };
   },
@@ -36,7 +69,6 @@ const DataAdapter = {
     if (this.isSupabaseMode()) {
       return await SupabaseService.signOut();
     }
-    // Mock mode: clear session flag so reload shows LoginScreen
     localStorage.removeItem(MOCK_SESSION_KEY);
   },
 
@@ -44,8 +76,9 @@ const DataAdapter = {
     if (this.isSupabaseMode()) {
       return await SupabaseService.getSession();
     }
-    // Mock mode: only return session if user has explicitly signed in
     if (!localStorage.getItem(MOCK_SESSION_KEY)) return null;
+    const profile = this.getLocalProfile();
+    MOCK_DATA.user = { ...MOCK_DATA.user, name: profile.name, email: profile.email, role: profile.role, initials: profile.initials };
     return { user: MOCK_DATA.user };
   },
   
