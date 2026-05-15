@@ -514,9 +514,14 @@ function MyWallet() {
   const totalBalance   = wallets.reduce((s,w) => s + w.balance, 0);
   const spendByGroup   = getSpendByGroup(personalTransactions, personalCategories, mp);
 
-  function saveWallet(id, form) {
-    setWallets(ws => ws.map(w => w.id===id ? {...w, ...form} : w));
-    setEditingWallet(null);
+  async function saveWallet(id, form) {
+    try {
+      await DataAdapter.updatePersonalWallet(id, form);
+      setWallets(ws => ws.map(w => w.id===id ? {...w, ...form} : w));
+      setEditingWallet(null);
+    } catch (err) {
+      Toast.error('Không thể lưu ví: ' + err.message);
+    }
   }
 
   return (
@@ -587,7 +592,7 @@ function MyWallet() {
               {personalTransactions.map(tx => {
                 const cat = personalCategories.find(c=>c.id===tx.categoryId);
                 const grp = personalCategoryGroups.find(g=>g.key===cat?.group);
-                const wal = personalWallets.find(w=>w.id===tx.walletId);
+                const wal = wallets.find(w=>w.id===tx.walletId);
                 return (
                   <tr key={tx.id}>
                     <td style={{ fontSize:13,whiteSpace:'nowrap' }}>{formatDate(tx.date,true)}</td>
@@ -658,10 +663,19 @@ function DailySpend() {
     setCatModal(null);
   }
 
-  function saveTx(form) {
-    if (editingTx) setTxList(l => l.map(t => t.id===editingTx.id ? {...t,...form} : t));
-    else setTxList(l => [{ ...form, id:'pt_'+Date.now() }, ...l]);
-    setEditingTx(null); setAddingNew(false);
+  async function saveTx(form) {
+    try {
+      if (editingTx) {
+        await DataAdapter.updatePersonalTransaction(editingTx.id, form);
+        setTxList(l => l.map(t => t.id===editingTx.id ? {...t, ...form} : t));
+      } else {
+        const created = await DataAdapter.addPersonalTransaction(form);
+        setTxList(l => [created || { ...form, id:'pt_'+Date.now() }, ...l]);
+      }
+      setEditingTx(null); setAddingNew(false);
+    } catch (err) {
+      Toast.error('Không thể lưu giao dịch: ' + err.message);
+    }
   }
 
   const spendByGroup = getSpendByGroup(txList, personalCategories, mp);
@@ -812,7 +826,13 @@ function DailySpend() {
             <div className="modal-body"><div style={{ fontSize:13,color:'var(--text-3)' }}>Hành động này không thể hoàn tác.</div></div>
             <div className="modal-footer">
               <button className="btn btn-ghost btn-sm" onClick={()=>setDeletingTx(null)}>Hủy</button>
-              <button className="btn btn-sm" style={{ background:'var(--expense)',color:'white' }} onClick={()=>{setTxList(l=>l.filter(t=>t.id!==deletingTx));setDeletingTx(null);}}>{IC.trash(14)} Xóa</button>
+              <button className="btn btn-sm" style={{ background:'var(--expense)',color:'white' }} onClick={async()=>{
+                try {
+                  await DataAdapter.deletePersonalTransaction(deletingTx);
+                  setTxList(l=>l.filter(t=>t.id!==deletingTx));
+                  setDeletingTx(null);
+                } catch(err){ Toast.error('Không thể xóa: '+err.message); }
+              }}>{IC.trash(14)} Xóa</button>
             </div>
           </div>
         </div>
@@ -842,18 +862,30 @@ function SavingsGoals() {
   const totalSaved  = goals.reduce((s,g)=>s+g.saved,0);
   const totalTarget = goals.reduce((s,g)=>s+g.target,0);
 
-  function saveContrib(goalId, amount) {
-    setGoals(gs=>gs.map(g=>g.id===goalId?{...g,saved:g.saved+amount}:g));
-    setContrib(null);
+  async function saveContrib(goalId, amount) {
+    try {
+      await DataAdapter.addSavingsContrib(goalId, amount);
+      setGoals(gs=>gs.map(g=>g.id===goalId?{...g,saved:g.saved+amount}:g));
+      setContrib(null);
+    } catch(err){ Toast.error('Không thể nạp tiền: '+err.message); }
   }
-  function saveGoalEdit(id, form) {
-    setGoals(gs=>gs.map(g=>g.id===id?{...g,...form}:g));
-    setEditGoal(null);
+  async function saveGoalEdit(id, form) {
+    try {
+      await DataAdapter.updateSavingsGoal(id, form);
+      setGoals(gs=>gs.map(g=>g.id===id?{...g,...form}:g));
+      setEditGoal(null);
+    } catch(err){ Toast.error('Không thể lưu: '+err.message); }
   }
-  function addGoal() {
+  async function addGoal() {
     if (!newGoal.name||!newGoal.target) return;
-    setGoals(gs=>[...gs,{id:'sg_'+Date.now(),name:newGoal.name,target:Number(newGoal.target),saved:0,deadline:newGoal.deadline||null,color:newGoal.color,emoji:newGoal.emoji}]);
-    setShowNew(false); setNewGoal({name:'',target:'',deadline:'',emoji:'🎯',color:'#7C3AED'});
+    try {
+      const created = await DataAdapter.addSavingsGoal({
+        name:newGoal.name, target:Number(newGoal.target), saved:0,
+        deadline:newGoal.deadline||null, color:newGoal.color, emoji:newGoal.emoji
+      });
+      setGoals(gs=>[...gs, created]);
+      setShowNew(false); setNewGoal({name:'',target:'',deadline:'',emoji:'🎯',color:'#7C3AED'});
+    } catch(err){ Toast.error('Không thể tạo heo đất: '+err.message); }
   }
 
   return (

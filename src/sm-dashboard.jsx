@@ -123,12 +123,7 @@ function PersonalWidget({ setPage }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    if (window.DataAdapter) {
-      window.DataAdapter.getPersonalData().then(setData).catch(console.error);
-    } else {
-      // Import hack if DataAdapter is not global
-      import('./sm-data-adapter.js').then(m => m.DataAdapter.getPersonalData().then(setData)).catch(console.error);
-    }
+    DataAdapter.getPersonalData().then(setData).catch(console.error);
   }, []);
 
   if (!data) {
@@ -140,7 +135,7 @@ function PersonalWidget({ setPage }) {
   }
 
   const { transactions: personalTransactions, categories: personalCategories, categoryGroups: personalCategoryGroups, budgets: personalBudgets, wallets: personalWallets, salaryInfo } = data;
-  const user = window.DataAdapter ? window.DataAdapter.getCurrentUser() || {} : {};
+  const user = DataAdapter.getCurrentUser() || {};
   const mp = new Date().toISOString().slice(0, 7);
   const fixedIds   = new Set(personalCategories.filter(c=>c.group==='fixed').map(c=>c.id));
   const fixedSpent = personalTransactions.filter(t=>t.date.startsWith(mp)&&fixedIds.has(t.categoryId)).reduce((s,t)=>s+t.amount,0);
@@ -162,7 +157,7 @@ function PersonalWidget({ setPage }) {
     <div className="card" style={{ padding:'20px 24px', borderLeft:'4px solid #0D9488' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ width:34,height:34,borderRadius:9,background:'rgba(13,148,136,0.12)',display:'flex',alignItems:'center',justifyContent:'center',color:'#0D9488' }}>{window.IC ? window.IC.creditCard(17) : null}</div>
+          <div style={{ width:34,height:34,borderRadius:9,background:'rgba(13,148,136,0.12)',display:'flex',alignItems:'center',justifyContent:'center',color:'#0D9488' }}>{IC.creditCard(17)}</div>
           <div>
             <div style={{ fontFamily:'Space Grotesk',fontWeight:700,fontSize:14 }}>Tài chính cá nhân · T{new Date().getMonth() + 1}/{new Date().getFullYear()}</div>
             <div style={{ fontSize:11.5,color:'var(--text-4)' }}>{user.name || 'Thủ quỹ'}</div>

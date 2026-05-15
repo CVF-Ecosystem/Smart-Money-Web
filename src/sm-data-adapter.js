@@ -594,6 +594,53 @@ const DataAdapter = {
     }
   },
 
+  async updatePersonalWallet(id, updates) {
+    if (this.isSupabaseMode() && SupabaseService.updatePersonalWallet) {
+      return await SupabaseService.updatePersonalWallet(id, updates);
+    }
+    const wallet = (MOCK_DATA.personalWallets || []).find(w => w.id === id);
+    if (wallet) {
+      Object.assign(wallet, updates);
+      this._saveLocal();
+    }
+    return wallet;
+  },
+
+  async addSavingsGoal(goal) {
+    if (this.isSupabaseMode() && SupabaseService.addSavingsGoal) {
+      return await SupabaseService.addSavingsGoal(goal);
+    }
+    const newGoal = { id: 'sg_' + Date.now(), ...goal };
+    if (!MOCK_DATA.savingsGoals) MOCK_DATA.savingsGoals = [];
+    MOCK_DATA.savingsGoals.push(newGoal);
+    this._saveLocal();
+    return newGoal;
+  },
+
+  async updateSavingsGoal(id, updates) {
+    if (this.isSupabaseMode() && SupabaseService.updateSavingsGoal) {
+      return await SupabaseService.updateSavingsGoal(id, updates);
+    }
+    const goal = (MOCK_DATA.savingsGoals || []).find(g => g.id === id);
+    if (goal) {
+      Object.assign(goal, updates);
+      this._saveLocal();
+    }
+    return goal;
+  },
+
+  async addSavingsContrib(goalId, amount) {
+    if (this.isSupabaseMode() && SupabaseService.addSavingsContrib) {
+      return await SupabaseService.addSavingsContrib(goalId, amount);
+    }
+    const goal = (MOCK_DATA.savingsGoals || []).find(g => g.id === goalId);
+    if (goal) {
+      goal.saved = (goal.saved || 0) + amount;
+      this._saveLocal();
+    }
+    return goal;
+  },
+
   // ── Helpers ────────────────────────────────────────────────────────────────
   
   _recalculateStats() {

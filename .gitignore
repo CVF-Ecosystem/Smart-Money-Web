@@ -1,5 +1,7 @@
-# Supabase config (contains sensitive keys)
-supabase-config.js
+# Secrets — never commit real credentials
+.env
+.env.local
+.env.*.local
 
 # Node modules (if using npm later)
 node_modules/

@@ -376,3 +376,19 @@ CREATE POLICY "personal_select" ON personal_categories FOR ALL USING (profile_id
 CREATE POLICY "personal_select" ON personal_transactions FOR ALL USING (profile_id = auth.uid());
 CREATE POLICY "personal_select" ON personal_budgets FOR ALL USING (profile_id = auth.uid());
 CREATE POLICY "personal_select" ON personal_salary FOR ALL USING (profile_id = auth.uid());
+
+-- ── Savings Goals (Heo đất tiết kiệm) ──────────────────────────────────────
+CREATE TABLE savings_goals (
+  id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name       TEXT NOT NULL,
+  emoji      TEXT DEFAULT '🎯',
+  color      TEXT DEFAULT '#7C3AED',
+  target     NUMERIC(15,2) NOT NULL CHECK (target > 0),
+  saved      NUMERIC(15,2) DEFAULT 0 CHECK (saved >= 0),
+  deadline   DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE savings_goals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "personal_select" ON savings_goals FOR ALL USING (profile_id = auth.uid());

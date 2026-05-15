@@ -18,13 +18,7 @@ let currentOrgId = null;
  * @param {string} supabaseAnonKey - Your Supabase anon/public key
  */
 function initSupabase(supabaseUrl, supabaseAnonKey) {
-  if (!window.supabase) {
-    console.error('❌ Supabase JS library not loaded. Add: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>');
-    return false;
-  }
-  
-  supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
   return true;
 }
 
@@ -720,14 +714,18 @@ async function rejectRequest(id, note = '') {
 
 async function getPersonalData() {
   const uid = currentUser.id;
-  const [wallets, categories, transactions, budgets, salaryInfo] = await Promise.all([
+  const [wallets, categories, transactions, budgets, salaryInfo, savingsGoals] = await Promise.all([
     supabase.from('personal_wallets').select('*').eq('profile_id', uid),
     supabase.from('personal_categories').select('*').eq('profile_id', uid),
     supabase.from('personal_transactions').select('*').eq('profile_id', uid).order('date', { ascending: false }),
     supabase.from('personal_budgets').select('*').eq('profile_id', uid).maybeSingle(),
-    supabase.from('personal_salary').select('*').eq('profile_id', uid).maybeSingle()
+    supabase.from('personal_salary').select('*').eq('profile_id', uid).maybeSingle(),
+    supabase.from('savings_goals').select('*').eq('profile_id', uid).order('created_at'),
   ]);
-  
+
+  const b = budgets.data;
+  const s = salaryInfo.data;
+
   return {
     wallets: wallets.data || [],
     categories: categories.data || [],
@@ -738,10 +736,14 @@ async function getPersonalData() {
       { key: 'others',    name: 'Phát sinh',  color: '#DC2626', desc: 'Chi phí ngoài dự tính' },
     ],
     transactions: transactions.data || [],
-    budgets: budgets.data || { monthly: 12000000, categories: { fixed: 5000000, daily: 3000000, lifestyle: 2500000, others: 1500000 } },
-    salaryInfo: salaryInfo.data || { monthlySalary: 15000000, salaryDay: 5 },
+    budgets: b
+      ? { monthly: b.monthly_total, categories: { fixed: b.fixed_limit, daily: b.daily_limit, lifestyle: b.lifestyle_limit, others: b.others_limit } }
+      : { monthly: 12000000, categories: { fixed: 5000000, daily: 3000000, lifestyle: 2500000, others: 1500000 } },
+    salaryInfo: s
+      ? { monthlySalary: s.monthly_salary, salaryDay: s.salary_day }
+      : { monthlySalary: 15000000, salaryDay: 5 },
     pendingItems: [],
-    savingsGoals: []
+    savingsGoals: savingsGoals.data || [],
   };
 }
 
@@ -806,12 +808,87 @@ async function deletePersonalCategory(id) {
   if (error) throw error;
 }
 
+async function updatePersonalWallet(id, updates) {
+  const { data, error } = await supabase
+    .from('personal_wallets')
+    .update(updates)
+    .eq('id', id)
+    .eq('profile_id', currentUser.id)
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function getSavingsGoals() {
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .select('*')
+    .eq('profile_id', currentUser.id)
+    .order('created_at');
+  if (error) throw error;
+  return data || [];
+}
+
+async function addSavingsGoal(goal) {
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .insert([{ ...goal, profile_id: currentUser.id }])
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function updateSavingsGoal(id, updates) {
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('profile_id', currentUser.id)
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function addSavingsContrib(goalId, amount) {
+  const { data: current, error: fetchErr } = await supabase
+    .from('savings_goals')
+    .select('saved')
+    .eq('id', goalId)
+    .eq('profile_id', currentUser.id)
+    .single();
+  if (fetchErr) throw fetchErr;
+
+  const { data, error } = await supabase
+    .from('savings_goals')
+    .update({ saved: (current?.saved || 0) + amount, updated_at: new Date().toISOString() })
+    .eq('id', goalId)
+    .eq('profile_id', currentUser.id)
+    .select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function testConnection() {
+  if (!supabase) throw new Error('Supabase chưa được khởi tạo');
+  const { error } = await supabase.auth.getSession();
+  if (error) throw error;
+  return true;
+}
+
+function resetSupabase() {
+  supabase = null;
+  currentUser = null;
+  currentOrgId = null;
+}
+
 // ── Export API ───────────────────────────────────────────────────────────────
 
 export const SupabaseService = {
   // Setup
   initSupabase,
   isSupabaseReady,
+  testConnection,
+  resetSupabase,
   
   // Auth
   signIn,
@@ -887,6 +964,11 @@ export const SupabaseService = {
   addPersonalCategory,
   updatePersonalCategory,
   deletePersonalCategory,
+  updatePersonalWallet,
+  getSavingsGoals,
+  addSavingsGoal,
+  updateSavingsGoal,
+  addSavingsContrib,
   
   // Seed
   seedFromMockData,
