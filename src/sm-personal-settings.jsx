@@ -1,7 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { DataAdapter } from './sm-data-adapter.js';
 import { Toast } from './sm-toast.jsx';
+import { IC } from './sm-icons.jsx';
+
+const formatVND = (n) => {
+  if (!n && n !== 0) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return (n / 1e9).toFixed(1).replace('.0', '') + ' tỷ';
+  if (abs >= 1e6) return (n / 1e6).toFixed(1).replace('.0', '') + ' tr';
+  return n.toLocaleString('vi-VN') + 'đ';
+};
 
 // ── Personal Category Modal ───────────────────────────────────────────────────
 function PCatModal({ cat, defaultGroup, groups, onClose, onSave }) {

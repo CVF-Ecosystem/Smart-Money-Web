@@ -1,6 +1,32 @@
-
-import React, {  useState, useMemo  } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ConfirmDialog } from './sm-confirm.jsx';
+import { DataAdapter } from './sm-data-adapter.js';
+import { IC } from './sm-icons.jsx';
+import { Toast } from './sm-toast.jsx';
+import { useApp } from './sm-layout.jsx';
+
+const formatVND = (n) => {
+  if (!n && n !== 0) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return (n / 1e9).toFixed(1).replace('.0', '') + ' tỷ';
+  if (abs >= 1e6) return (n / 1e6).toFixed(1).replace('.0', '') + ' tr';
+  return n.toLocaleString('vi-VN') + 'đ';
+};
+const formatVNDFull = (n) => {
+  if (!n && n !== 0) return '—';
+  return Math.abs(n).toLocaleString('vi-VN') + 'đ';
+};
+const formatDate = (dateStr, short = false) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (short) return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString('vi-VN');
+};
+const formatTS = (ts) => {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+};
+
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 function getSpendByGroup(txList, cats, monthPrefix) {
